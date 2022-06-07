@@ -36,25 +36,21 @@ class TestEvent(unittest.TestCase):
 
     def test_events(self):
 
-        self.assertEqual(self.marketEvent.type, 'Market')
-        self.assertEqual(self.marketEvent.token, TOKEN)
-        self.assertEqual(self.marketEvent.direction, DIRECTION)
-        self.assertEqual(self.marketEvent.direction, TIMESTAMP)
+        self.assertEqual(self.marketEvent.type, 'MARKET')
 
-        self.assertEqual(self.signalEvent.type, 'Signal')
+        self.assertEqual(self.signalEvent.type, 'SIGNAL')
         self.assertEqual(self.signalEvent.token, TOKEN)
         self.assertEqual(self.signalEvent.direction, DIRECTION)
         self.assertEqual(self.signalEvent.timestamp, TIMESTAMP)
-        self.assertEqual(self.signalEvent.notional, 1000)
 
-        self.assertEqual(self.orderEvent.type, 'Order')
+        self.assertEqual(self.orderEvent.type, 'ORDER')
         self.assertEqual(self.orderEvent.timestamp, TIMESTAMP)
         self.assertEqual(self.orderEvent.notional, 1000)
         self.assertEqual(self.orderEvent.direction, DIRECTION)
 
-        self.assertEqual(self.fillEvent.type, 'Fill')
+        self.assertEqual(self.fillEvent.type, 'FILL')
         self.assertEqual(self.fillEvent.token, TOKEN)
         self.assertEqual(self.fillEvent.timestamp, TIMESTAMP)
         self.assertEqual(self.fillEvent.notional, 1000)
-        self.assertEqual(self.fillEvent.fees, 0)
+        self.assertEqual(self.fillEvent.fee, 0)
         self.assertEqual(self.fillEvent.slippage, 0)
