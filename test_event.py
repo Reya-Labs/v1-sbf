@@ -4,7 +4,7 @@ from datetime import datetime
 
 TOKEN = "Aave USDC"
 TIMESTAMP = datetime(2021, 11, 28, 23, 55, 59, 342380)
-DIRECTION = "long"
+DIRECTION = "LONG"
 
 class TestEvent(unittest.TestCase):
 
@@ -27,7 +27,7 @@ class TestEvent(unittest.TestCase):
         self.fillEvent = FillEvent(
             token=TOKEN,
             slippage=0,
-            fees=0,
+            fee=0,
             timestamp=TIMESTAMP,
             notional=1000,
             direction=DIRECTION
