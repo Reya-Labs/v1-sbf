@@ -1,0 +1,60 @@
+import unittest
+from event import MarketEvent, FillEvent, OrderEvent, SignalEvent
+from datetime import datetime
+
+TOKEN = "Aave USDC"
+TIMESTAMP = datetime(2021, 11, 28, 23, 55, 59, 342380)
+DIRECTION = "long"
+
+class TestEvent(unittest.TestCase):
+
+
+    def setUp(self):
+
+        self.marketEvent = MarketEvent()
+        self.signalEvent = SignalEvent(
+            token=TOKEN,
+            direction=DIRECTION,
+            timestamp=TIMESTAMP
+        )
+        self.orderEvent = OrderEvent(
+            token=TOKEN,
+            timestamp=TIMESTAMP,
+            notional=1000,
+            direction=DIRECTION
+        )
+
+        self.fillEvent = FillEvent(
+            token=TOKEN,
+            slippage=0,
+            fees=0,
+            timestamp=TIMESTAMP,
+            notional=1000,
+            direction=DIRECTION
+        )
+
+
+    def test_events(self):
+
+        self.assertEqual(self.marketEvent.type, 'Market')
+        self.assertEqual(self.marketEvent.token, TOKEN)
+        self.assertEqual(self.marketEvent.direction, DIRECTION)
+        self.assertEqual(self.marketEvent.direction, TIMESTAMP)
+
+        self.assertEqual(self.signalEvent.type, 'Signal')
+        self.assertEqual(self.signalEvent.token, TOKEN)
+        self.assertEqual(self.signalEvent.direction, DIRECTION)
+        self.assertEqual(self.signalEvent.timestamp, TIMESTAMP)
+        self.assertEqual(self.signalEvent.notional, 1000)
+
+        self.assertEqual(self.orderEvent.type, 'Order')
+        self.assertEqual(self.orderEvent.timestamp, TIMESTAMP)
+        self.assertEqual(self.orderEvent.notional, 1000)
+        self.assertEqual(self.orderEvent.direction, DIRECTION)
+
+        self.assertEqual(self.fillEvent.type, 'Fill')
+        self.assertEqual(self.fillEvent.token, TOKEN)
+        self.assertEqual(self.fillEvent.timestamp, TIMESTAMP)
+        self.assertEqual(self.fillEvent.notional, 1000)
+        self.assertEqual(self.fillEvent.fees, 0)
+        self.assertEqual(self.fillEvent.slippage, 0)
