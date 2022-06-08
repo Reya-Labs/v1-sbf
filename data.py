@@ -71,6 +71,32 @@ class HistoricCSVDataHandler(DataHandler):
 
         self._open_convert_csv_files()
 
+    def update_rates(self):
+        """
+        Pushes the latest rate to the latest_symbol_data structure
+        for all tokens in the token list.
+        """
+        for t in self.token_list:
+            try:
+                rate = next(self._get_new_rate(t))
+            except StopIteration:
+                self.continue_backtest = False
+            else:
+                if rate is not None:
+                    self.latest_token_data[t].append(rate)
+        self.events.put(MarketEvent())
+
+    def get_latest_rates(self, token, N=1):
+        """
+        Returns the last N rates from the latest_token list,
+        or N-k if less available.
+        """
+        try:
+            rates_list = self.latest_token_data[token]
+        except KeyError:
+            print("That token is not available in the historical data set.")
+        else:
+            return rates_list[-N:]
 
     def _get_new_rate(self, token):
         """

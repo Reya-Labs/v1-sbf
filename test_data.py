@@ -33,11 +33,21 @@ class TestDataHandler(unittest.TestCase):
         self.assertEqual(str(new_rate[1]), '2021-03-11 14:49:24+00:00')
         self.assertEqual(new_rate[2], 1e27)
 
-        print("here")
-
     def test_get_latest_rates(self):
 
-        pass
+        rates = self.dataHandler.get_latest_rates("aave_usdc")
+
+        self.assertEqual(rates, [])
+
+    def test_update_rates(self):
+
+        self.dataHandler.update_rates()
+
+        self.assertEqual(self.dataHandler.events.get().type, 'MARKET')
+
+        self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'][0][0], 'aave_usdc')
+        self.assertEqual(str(self.dataHandler.latest_token_data['aave_usdc'][0][1]), '2021-03-11 14:49:24+00:00')
+        self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'][0][2], 1e27)
 
 
     def test_latest_token_data(self):
@@ -57,10 +67,6 @@ class TestDataHandler(unittest.TestCase):
         pass
 
     def test_latest_bars(self):
-
-        pass
-
-    def test_update_bars(self):
 
         pass
 
