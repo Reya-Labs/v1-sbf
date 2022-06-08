@@ -132,6 +132,22 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(order.direction, 'LONG')
 
 
+    def test_update_signal(self):
+
+        # (Token, Direction = LONG, SHORT or EXIT, Timestamp)
+        signal = SignalEvent('aave_usdc', 'LONG', '2021-03-11 14:49')
+
+        self.portfolio.update_signal(
+            event=signal
+        )
+
+        order = self.portfolio.events.get()
+
+        self.assertEqual(order.token, "aave_usdc")
+        self.assertEqual(order.timestamp, '2021-03-11 14:49')
+        self.assertEqual(order.notional, 10000)
+        self.assertEqual(order.direction, 'LONG')
+
 
 
 if __name__ == '__main__':
