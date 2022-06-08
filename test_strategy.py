@@ -46,8 +46,6 @@ class TestStrategy(unittest.TestCase):
         queue_size = self.strategy.events.qsize()
         self.assertEqual(queue_size, 0)
 
-        print("here")
-
 
 if __name__ == '__main__':
     unittest.main()
