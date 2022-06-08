@@ -21,12 +21,11 @@ class TestEvent(unittest.TestCase):
             token=TOKEN,
             timestamp=TIMESTAMP,
             notional=1000,
-            direction=DIRECTION
+            direction=DIRECTION,
         )
 
         self.fillEvent = FillEvent(
             token=TOKEN,
-            fixedRate=0.01,
             fee=0,
             timestamp=TIMESTAMP,
             notional=1000,
@@ -53,7 +52,6 @@ class TestEvent(unittest.TestCase):
         self.assertEqual(self.fillEvent.timestamp, TIMESTAMP)
         self.assertEqual(self.fillEvent.notional, 1000)
         self.assertEqual(self.fillEvent.fee, 0)
-        self.assertEqual(self.fillEvent.fixedRate, 0.01)
 
 
 

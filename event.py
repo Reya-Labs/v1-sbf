@@ -97,7 +97,7 @@ class FillEvent(Event):
     In addition, stores the fees of the trade collected by liquidity providers.
     """
 
-    def __init__(self, token, fixedRate, fee, timestamp, notional, direction):
+    def __init__(self, token, fee, timestamp, notional, direction):
         """
         Initialises the FillEvent object. Sets the token, slippage,
         fees, timestamp, notional & direction
@@ -107,7 +107,6 @@ class FillEvent(Event):
         timestamp - The timestamp at which the signal was generated
         direction - 'LONG' or 'SHORT'.
         notional - Non-negative integer for notional amount (margin*leverage) traded
-        fixedRate - realised fixed rate (may be affected by a slippage/market impact model)
         fee      - fee paid by the trader to the liquidity providers in the IRS Pool
         """
 
@@ -116,5 +115,4 @@ class FillEvent(Event):
         self.timestamp = timestamp
         self.direction = direction
         self.notional = notional
-        self.fixedRate = fixedRate
         self.fee = fee

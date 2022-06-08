@@ -147,6 +147,14 @@ class NaivePortfolio(Portfolio):
         # Append the current holdings
         self.all_holdings.append(dh)
 
+    def get_current_fixed_rate(self):
+
+        # fixedRate - realised fixed rate (may be affected by a slippage/market impact model)
+        # todo: implementation
+        # this should be a function of self.rates, we can retrieve the latest N bars and calculate the moving average
+
+        return 0.1
+
     def update_positions_from_fill(self, fill):
         """
         Takes a FilltEvent object and updates the position matrix
@@ -156,13 +164,15 @@ class NaivePortfolio(Portfolio):
         fill - The FillEvent object to update the positions with.
         """
 
+        # the fixed rate can be set here, because we already have access to the rates data!
+
         # Update the list of current positions with the newly traded IRS contract
 
         new_position = {}
         new_position['timestamp'] = fill.timestamp
         new_position['direction'] = fill.direction
         new_position['notional'] = fill.notional
-        new_position['fixedRate'] = fill.fixedRate
+        new_position['fixedRate'] = self.get_current_fixed_rate()
         new_position['fee'] = fill.fee
 
         self.current_positions[fill.token].append(new_position)
@@ -213,7 +223,8 @@ class NaivePortfolio(Portfolio):
             token=signal.token,
             timestamp=signal.timestamp,
             direction=signal.direction,
-            notional=self.generate_naive_notional()
+            notional=self.generate_naive_notional(),
+
         )
 
         return order
