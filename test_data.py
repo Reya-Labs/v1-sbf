@@ -2,6 +2,7 @@ import unittest
 from data import HistoricCSVDataHandler
 import queue
 
+
 class TestDataHandler(unittest.TestCase):
 
     def setUp(self):
