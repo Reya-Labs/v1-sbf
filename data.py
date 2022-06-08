@@ -38,3 +38,68 @@ class DataHandler(object):
         """
         raise NotImplementedError("Should implement update_rates()")
 
+
+
+class HistoricCSVDataHandler(DataHandler):
+    """
+    HistoricCSVDataHandler is designed to read CSV files for
+    each requested token from disk and provide an interface
+    to obtain the "latest" rate in a manner identical to a live
+    trading interface.
+    """
+
+    def __init__(self, events, csv_dir, token_list):
+        """
+        Initialises the historic data handler by requesting
+        the location of the CSV files and a list of tokens.
+
+        It will be assumed that all files are of the form
+        'protocol_token.csv' (e.g. aave_usdc.csv),where token is a string in the list .
+
+        Parameters:
+        events - The Event Queue.
+        csv_dir - Absolute directory path to the CSV files.
+        token_list - A list of token strings.
+        """
+        self.events = events
+        self.csv_dir = csv_dir
+        self.token_list = token_list
+
+        self.token_data = {}
+        self.latest_token_data = {}
+        self.continue_backtest = True
+
+        # self._open_convert_csv_files()
+
+
+
+    def _open_convert_csv_files(self):
+        """
+        Opens the CSV files from the data directory, converting
+        them into pandas DataFrames within a token dictionary.
+.
+        """
+
+        # https://dune.com/queries/891837 (example dune query to get liquidity index series of a given Aaave Lending Pool)
+        comb_index = None
+        for t in self.token_list:
+            # Load the CSV file with no header information, indexed on date
+
+            self.token_data[t] = pd.io.parsers.read_csv(
+                                      os.path.join(self.csv_dir, '%s.csv' % t),
+                                      header=0, index_col=0,
+                                      names=['datetime', 'rate_index']
+                                  )
+
+            # Combine the index to pad forward values
+            if comb_index is None:
+                comb_index = self.token_data[t].index
+            else:
+                comb_index.union(self.token_data[t].index)
+
+            # Set the latest symbol_data to None
+            self.latest_token_data[t] = []
+
+        # Reindex the dataframes
+        for s in self.token_list:
+            self.token_data[s] = self.token_data[s].reindex(index=comb_index, method='pad').iterrows()
