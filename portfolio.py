@@ -184,3 +184,14 @@ class NaivePortfolio(Portfolio):
         self.current_holdings['cash'] -= (fill.fee)
         self.current_holdings['total'] -= (fill.fee)
 
+
+    def update_fill(self, event):
+        """
+        Updates the portfolio current positions and holdings
+        from a FillEvent.
+        """
+        if event.type == 'FILL':
+            self.update_positions_from_fill(event)
+            self.update_holdings_from_fill(event)
+
+

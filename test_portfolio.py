@@ -90,6 +90,33 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(self.portfolio.current_holdings['cash'], 990)
         self.assertEqual(self.portfolio.current_holdings['total'], 990)
 
+    def test_update_fill(self):
+
+        fill = FillEvent(
+            token='aave_usdc',
+            fixedRate=0.01,
+            fee=10,
+            timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
+            notional=1000,
+            direction='LONG'
+        )
+
+        self.portfolio.update_fill(
+            event=fill
+        )
+
+        self.assertEqual(self.portfolio.current_holdings['cash'], 990)
+        self.assertEqual(self.portfolio.current_holdings['total'], 990)
+
+        latest_position = self.portfolio.current_positions['aave_usdc'][0]
+
+        self.assertEqual(latest_position['timestamp'], datetime(2021, 11, 28, 23, 55, 59, 342380))
+        self.assertEqual(latest_position['direction'], "LONG")
+        self.assertEqual(latest_position['notional'], 1000)
+        self.assertEqual(latest_position['fixedRate'], 0.01)
+        self.assertEqual(latest_position['fee'], 10.0)
+
+        print("here")
 
 
 
