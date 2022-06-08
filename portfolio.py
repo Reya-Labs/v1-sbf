@@ -1,13 +1,10 @@
 # portfolio.py
 
-import datetime
-import numpy as np
 import pandas as pd
 
 from abc import ABCMeta, abstractmethod
-from math import floor
 
-from event import FillEvent, OrderEvent
+from event import OrderEvent
 
 
 class Portfolio(object):

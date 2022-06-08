@@ -6,6 +6,7 @@ import queue
 from datetime import datetime
 
 # todo: need to test the portfolio with multiple tokens
+# todo: performance metrics
 
 class TestPortfolio(unittest.TestCase):
 
@@ -183,6 +184,8 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(equity_curve.iloc[1, :]['aave_usdc'], 10000)  ## todo: sanity check with more realistic values
         self.assertEqual(equity_curve.iloc[1, :]['returns'], 9.99) ## todo: sanity check with more realistic values
         self.assertEqual(equity_curve.iloc[1, :]['equity_curve'], 10.99)  ## todo: sanity check with more realistic values
+
+
 
 
 if __name__ == '__main__':
