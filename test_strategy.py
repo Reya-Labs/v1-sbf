@@ -1,6 +1,7 @@
 import unittest
 from strategy import LongRateStrategy
 from data import HistoricCSVDataHandler
+from event import MarketEvent
 import queue
 
 
@@ -30,10 +31,16 @@ class TestStrategy(unittest.TestCase):
 
     def test_calculate_signals(self):
 
-        pass
+        marketEvent = MarketEvent()
+        self.strategy.calculate_signals(event=marketEvent)
+
+        self.assertEqual(self.strategy.events.get().type, "MARKET")
+
+        print("here")
 
 
-
+if __name__ == '__main__':
+    unittest.main()
 
 
 

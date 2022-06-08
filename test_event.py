@@ -54,3 +54,8 @@ class TestEvent(unittest.TestCase):
         self.assertEqual(self.fillEvent.notional, 1000)
         self.assertEqual(self.fillEvent.fee, 0)
         self.assertEqual(self.fillEvent.slippage, 0)
+
+
+
+if __name__ == '__main__':
+    unittest.main()
