@@ -72,7 +72,6 @@ class HistoricCSVDataHandler(DataHandler):
         # self._open_convert_csv_files()
 
 
-
     def _open_convert_csv_files(self):
         """
         Opens the CSV files from the data directory, converting
@@ -80,7 +79,6 @@ class HistoricCSVDataHandler(DataHandler):
 .
         """
 
-        # https://dune.com/queries/891837 (example dune query to get liquidity index series of a given Aaave Lending Pool)
         comb_index = None
         for t in self.token_list:
             # Load the CSV file with no header information, indexed on date
@@ -88,7 +86,11 @@ class HistoricCSVDataHandler(DataHandler):
             self.token_data[t] = pd.io.parsers.read_csv(
                                       os.path.join(self.csv_dir, '%s.csv' % t),
                                       header=0, index_col=0,
-                                      names=['datetime', 'rate_index']
+                                      names=['date', 'liquidityIndex'],
+                                      parse_dates=['date'],
+                                      dtype={
+                                          'liquidityIndex': "float64"
+                                      }
                                   )
 
             # Combine the index to pad forward values

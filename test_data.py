@@ -12,13 +12,23 @@ class TestDataHandler(unittest.TestCase):
 
         self.dataHandler = HistoricCSVDataHandler(
             events=events_queue,
-            csv_dir="",
-            token_list=["test"]
+            csv_dir="datasets",
+            token_list=["aave_usdc"]
         )
 
     def test_open_and_convert_csv_files(self):
 
-        pass
+        self.assertEqual(self.dataHandler.csv_dir, "datasets")
+        self.assertEqual(self.dataHandler.token_list, ["aave_usdc"])
+
+        self.dataHandler._open_convert_csv_files()
+
+        self.assertEqual(next(self.dataHandler.token_data['aave_usdc'])[1].loc["liquidityIndex"], 1e27)
+        self.assertEqual(str(next(self.dataHandler.token_data['aave_usdc'])[0]), '2021-03-16 11:49:16+00:00')
+
+        self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'], [])
+
+        print("here")
 
     def test_get_latest_rates(self):
 

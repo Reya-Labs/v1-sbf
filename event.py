@@ -81,8 +81,8 @@ class OrderEvent(Event):
         """
         Outputs the values within the Order.
         """
-        print "Order: Token=%s, Timestamp=%s, Notional=%s, Direction=%s" % \
-              (self.token, self.timestamp, self.notional, self.direction)
+        print ("Order: Token=%s, Timestamp=%s, Notional=%s, Direction=%s" % \
+              (self.token, self.timestamp, self.notional, self.direction))
 
 
 
