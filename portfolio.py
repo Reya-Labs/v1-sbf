@@ -184,7 +184,6 @@ class NaivePortfolio(Portfolio):
         self.current_holdings['cash'] -= (fill.fee)
         self.current_holdings['total'] -= (fill.fee)
 
-
     def update_fill(self, event):
         """
         Updates the portfolio current positions and holdings
@@ -194,4 +193,27 @@ class NaivePortfolio(Portfolio):
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
 
+    def generate_naive_notional(self):
 
+        # todo: implementation
+
+        return 10000.0
+
+    def generate_naive_order(self, signal):
+        """
+        Simply trades an OrderEvent object as a constant notional
+        amount for the signal object, without risk management or
+        position sizing considerations.
+
+        Parameters:
+        signal - The SignalEvent signal information.
+        """
+
+        order = OrderEvent(
+            token=signal.token,
+            timestamp=signal.timestamp,
+            direction=signal.direction,
+            notional=self.generate_naive_notional()
+        )
+
+        return order

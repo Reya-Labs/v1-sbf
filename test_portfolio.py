@@ -29,7 +29,6 @@ class TestPortfolio(unittest.TestCase):
 
     def test_update_timeindex(self):
 
-        # todo: Timestamp should be a datetime object
         # (Token, Direction = LONG, SHORT or EXIT, Timestamp)
         signal = SignalEvent('aave_usdc', 'LONG', '2021-03-11 14:49')
         self.dataHandler.update_rates()
@@ -117,6 +116,20 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(latest_position['fee'], 10.0)
 
         print("here")
+
+    def test_generate_naive_order(self):
+
+        # (Token, Direction = LONG, SHORT or EXIT, Timestamp)
+        signal = SignalEvent('aave_usdc', 'LONG', '2021-03-11 14:49')
+
+        order = self.portfolio.generate_naive_order(
+            signal=signal
+        )
+
+        self.assertEqual(order.token, "aave_usdc")
+        self.assertEqual(order.timestamp, '2021-03-11 14:49')
+        self.assertEqual(order.notional, 10000)
+        self.assertEqual(order.direction, 'LONG')
 
 
 
