@@ -20,7 +20,7 @@ class Dune:
         # https://duneanalytics.com/queries/4494/8769 => 4494
         # https://duneanalytics.com/queries/3705/7192 => 3705
         # https://duneanalytics.com/queries/3751/7276 => 3751
-        result_id = self.dune.query_result_id(query_id=query_id)
+        result_id = self.dune.query_result_id_v2(query_id=query_id)
         data = self.dune.query_result(result_id)
         return data
 
@@ -59,14 +59,12 @@ class Dune:
 
         for i in range(len(raw_data)):
 
-            symbol = raw_data[i]['data']['symbol']
-
-            date = raw_data[i]['data']['date_trunc']
-            apy = raw_data[i]['data']
+            date = raw_data[i]['data']['date']
+            liquidityIndex = raw_data[i]['data']['liquidityIndexUSDC']
 
             df = df.append({
                 'date': date,
-                'apy': apy,
+                'liquidityIndex': liquidityIndex,
             }, ignore_index=True)
 
         return df
@@ -76,8 +74,6 @@ class Dune:
 if __name__ == '__main__':
     # dune = Dune(username=os.environ.get('USERNAME'), password=os.environ.get("PASSWORD"))
     dune = Dune(username=os.environ.get('USERNAME'), password=os.environ.get("PASSWORD"))
-
     # df = dune.query_euler_interest_rates(coin='usdc')
-
-    # aave_liquidity_index_df = dune.query_aave_liquidity_index()
+    aave_liquidity_index_df = dune.query_aave_liquidity_index()
 
