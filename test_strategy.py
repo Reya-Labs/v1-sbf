@@ -4,7 +4,7 @@ from data import HistoricCSVDataHandler
 import queue
 
 
-class TestDataHandler(unittest.TestCase):
+class TestStrategy(unittest.TestCase):
 
     def setUp(self):
 
@@ -20,6 +20,20 @@ class TestDataHandler(unittest.TestCase):
             rates=self.dataHandler,
             events=events_queue
         )
+
+    def test_strategy_object_initialization(self):
+
+        self.assertEqual(self.strategy.rates, self.dataHandler)
+        self.assertEqual(self.strategy.aped['aave_usdc'], False)
+        self.assertEqual(self.strategy.token_list, ['aave_usdc'])
+
+
+    def test_calculate_signals(self):
+
+        pass
+
+
+
 
 
 
