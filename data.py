@@ -107,6 +107,7 @@ class HistoricCSVDataHandler(DataHandler):
             yield tuple([token, b[0], b[1]['liquidityIndex']])
 
 
+
     def _open_convert_csv_files(self):
         """
         Opens the CSV files from the data directory, converting

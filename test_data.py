@@ -1,10 +1,8 @@
 import unittest
-from datetime import datetime
 from data import HistoricCSVDataHandler
 import queue
 
 class TestDataHandler(unittest.TestCase):
-
 
     def setUp(self):
 
@@ -48,33 +46,6 @@ class TestDataHandler(unittest.TestCase):
         self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'][0][0], 'aave_usdc')
         self.assertEqual(str(self.dataHandler.latest_token_data['aave_usdc'][0][1]), '2021-03-11 14:49:24+00:00')
         self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'][0][2], 1e27)
-
-
-    def test_latest_token_data(self):
-
-        pass
-
-    def test_token_data(self):
-
-        pass
-
-    def test_csv_dir(self):
-
-        pass
-
-    def test_events(self):
-
-        pass
-
-    def test_latest_bars(self):
-
-        pass
-
-
-
-
-
-
 
 
 
