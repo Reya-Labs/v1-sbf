@@ -84,7 +84,8 @@ class NaivePortfolio(Portfolio):
         Constructs the holdings list using the start_date
         to determine when the time index will begin.
         """
-        d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
+        # d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
+        d = {}
         d['datetime'] = self.start_date
         d['cash'] = self.initial_capital
         d['fee'] = 0.0
@@ -96,7 +97,8 @@ class NaivePortfolio(Portfolio):
         This constructs the dictionary which will hold the instantaneous
         value of the portfolio across all tokens.
         """
-        d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
+        # d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
+        d = {}
         d['cash'] = self.initial_capital
         d['fee'] = 0.0
         d['total'] = self.initial_capital
@@ -131,7 +133,8 @@ class NaivePortfolio(Portfolio):
         self.all_positions.append(dp)
 
         # Update holdings
-        dh = dict((k,v) for k, v in [(s, 0) for s in self.token_list])
+        # dh = dict((k,v) for k, v in [(s, 0) for s in self.token_list])
+        dh = {}
         dh['datetime'] = rates[self.token_list[0]][0][1]
         dh['cash'] = self.current_holdings['cash']
         dh['fee'] = self.current_holdings['fee']
@@ -226,5 +229,18 @@ class NaivePortfolio(Portfolio):
         if event.type == 'SIGNAL':
             order_event = self.generate_naive_order(event)
             self.events.put(order_event)
+
+
+    def create_equity_curve_dataframe(self):
+        """
+        Creates a pandas DataFrame from the all_holdings
+        list of dictionaries.
+        """
+        curve = pd.DataFrame(self.all_holdings)
+        curve.set_index('datetime', inplace=True)
+        curve['returns'] = curve['total'].pct_change()
+        curve['equity_curve'] = (1.0+curve['returns']).cumprod()
+
+        self.equity_curve = curve
 
 

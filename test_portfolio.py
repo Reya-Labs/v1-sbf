@@ -149,6 +149,41 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(order.direction, 'LONG')
 
 
+    def test_equity_curve_dataframe(self):
+
+        self.dataHandler.update_rates()
+
+        fill = FillEvent(
+            token='aave_usdc',
+            fixedRate=0.01,
+            fee=10,
+            timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
+            notional=1000,
+            direction='LONG'
+        )
+
+        self.portfolio.update_fill(
+            event=fill
+        )
+
+        signal = SignalEvent('aave_usdc', 'LONG', '2021-03-11 14:49')
+
+        self.portfolio.update_timeindex(
+            event=signal
+        )
+
+        self.portfolio.create_equity_curve_dataframe()
+
+        equity_curve = self.portfolio.equity_curve
+
+        self.assertEqual(equity_curve.iloc[1, :]['cash'], 990)
+        self.assertEqual(equity_curve.iloc[1, :]['fee'], 10)
+        self.assertEqual(equity_curve.iloc[1, :]['total'], 10990)
+        # corresponds to the market value
+        self.assertEqual(equity_curve.iloc[1, :]['aave_usdc'], 10000)  ## todo: sanity check with more realistic values
+        self.assertEqual(equity_curve.iloc[1, :]['returns'], 9.99) ## todo: sanity check with more realistic values
+        self.assertEqual(equity_curve.iloc[1, :]['equity_curve'], 10.99)  ## todo: sanity check with more realistic values
+
 
 if __name__ == '__main__':
     unittest.main()
