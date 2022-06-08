@@ -87,7 +87,7 @@ class NaivePortfolio(Portfolio):
         d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
         d['datetime'] = self.start_date
         d['cash'] = self.initial_capital
-        d['commission'] = 0.0
+        d['fee'] = 0.0
         d['total'] = self.initial_capital
         return [d]
 
@@ -98,7 +98,7 @@ class NaivePortfolio(Portfolio):
         """
         d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
         d['cash'] = self.initial_capital
-        d['commission'] = 0.0
+        d['fee'] = 0.0
         d['total'] = self.initial_capital
         return d
 
@@ -146,3 +146,23 @@ class NaivePortfolio(Portfolio):
 
         # Append the current holdings
         self.all_holdings.append(dh)
+
+    def update_positions_from_fill(self, fill):
+        """
+        Takes a FilltEvent object and updates the position matrix
+        to reflect the new IRS position.
+
+        Parameters:
+        fill - The FillEvent object to update the positions with.
+        """
+
+        # Update the list of current positions with the newly traded IRS contract
+
+        new_position = {}
+        new_position['timestamp'] = fill.timestamp
+        new_position['direction'] = fill.direction
+        new_position['notional'] = fill.notional
+        new_position['fixedRate'] = fill.fixedRate
+        new_position['fee'] = fill.fee
+
+        self.current_positions[fill.token].append(new_position)
