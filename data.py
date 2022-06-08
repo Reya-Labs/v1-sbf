@@ -69,7 +69,16 @@ class HistoricCSVDataHandler(DataHandler):
         self.latest_token_data = {}
         self.continue_backtest = True
 
-        # self._open_convert_csv_files()
+        self._open_convert_csv_files()
+
+
+    def _get_new_rate(self, token):
+        """
+        Returns the latest rate (liquidityIndex) from the data feed as a tuple of
+        (token, datetime, liquidityIndex).
+        """
+        for b in self.token_data[token]:
+            yield tuple([token, b[0], b[1]['liquidityIndex']])
 
 
     def _open_convert_csv_files(self):

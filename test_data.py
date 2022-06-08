@@ -21,12 +21,17 @@ class TestDataHandler(unittest.TestCase):
         self.assertEqual(self.dataHandler.csv_dir, "datasets")
         self.assertEqual(self.dataHandler.token_list, ["aave_usdc"])
 
-        self.dataHandler._open_convert_csv_files()
-
         self.assertEqual(next(self.dataHandler.token_data['aave_usdc'])[1].loc["liquidityIndex"], 1e27)
         self.assertEqual(str(next(self.dataHandler.token_data['aave_usdc'])[0]), '2021-03-16 11:49:16+00:00')
 
         self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'], [])
+
+    def test_get_new_rate(self):
+
+        new_rate = next(self.dataHandler._get_new_rate('aave_usdc'))
+        self.assertEqual(new_rate[0], 'aave_usdc')
+        self.assertEqual(str(new_rate[1]), '2021-03-11 14:49:24+00:00')
+        self.assertEqual(new_rate[2], 1e27)
 
         print("here")
 
@@ -34,10 +39,6 @@ class TestDataHandler(unittest.TestCase):
 
         pass
 
-
-    def test_get_new_rate(self):
-
-        pass
 
     def test_latest_token_data(self):
 
