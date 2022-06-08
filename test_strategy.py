@@ -32,9 +32,19 @@ class TestStrategy(unittest.TestCase):
     def test_calculate_signals(self):
 
         marketEvent = MarketEvent()
+        self.dataHandler.update_rates()
+        self.strategy.events = queue.Queue() # empty the queue
         self.strategy.calculate_signals(event=marketEvent)
+        signalEvent = self.strategy.events.get()
+        self.assertEqual(signalEvent.type, "SIGNAL")
+        self.assertEqual(str(signalEvent.timestamp), '2021-03-11 14:49:24+00:00')
+        self.assertEqual(signalEvent.token, "aave_usdc")
+        self.assertEqual(signalEvent.direction, "LONG")
 
-        self.assertEqual(self.strategy.events.get().type, "MARKET")
+        # if recalculate the signal event nothing should happen since already holding
+        self.strategy.calculate_signals(event=marketEvent)
+        queue_size = self.strategy.events.qsize()
+        self.assertEqual(queue_size, 0)
 
         print("here")
 
