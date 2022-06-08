@@ -116,3 +116,5 @@ class FillEvent(Event):
         self.direction = direction
         self.notional = notional
         self.fee = fee
+
+        # we can additionally introduce self.slippage to have more realistic market impact calculations

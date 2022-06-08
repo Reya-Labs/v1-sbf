@@ -1,7 +1,7 @@
 import datetime
 from abc import ABCMeta, abstractmethod
 
-from event import FillEvent, OrderEvent
+from event import FillEvent
 
 
 class ExecutionHandler(object):
@@ -61,6 +61,12 @@ class SimulatedExecutionHandler(ExecutionHandler):
 
         # token, fixedRate, fee, timestamp, notional, direction
         if event.type == 'ORDER':
-            fill_event = FillEvent(event.token, event.fixedRate, 0.0, datetime.datetime.utcnow(), event.notional,
-                                   event.direction)
+            fill_event = FillEvent(
+                token=event.token,
+                fee=0,
+                timestamp=datetime.datetime.utcnow(),
+                notional=event.notional,
+                direction=event.direction
+            )
+
             self.events.put(fill_event)
