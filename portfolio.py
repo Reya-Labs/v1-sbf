@@ -3,7 +3,7 @@
 import pandas as pd
 
 from abc import ABCMeta, abstractmethod
-
+from performance import PerformanceMetricsCalculator
 from event import OrderEvent
 
 
@@ -251,4 +251,21 @@ class NaivePortfolio(Portfolio):
 
         self.equity_curve = curve
 
+    def output_summary_stats(self):
+        """
+        Creates a list of summary statistics for the portfolio such
+        as Sharpe Ratio and drawdown information.
+        """
+        total_return = self.equity_curve['equity_curve'][-1]
+        returns = self.equity_curve['returns']
+        pnl = self.equity_curve['equity_curve']
 
+        sharpe_ratio = PerformanceMetricsCalculator.create_sharpe_ratio(returns)
+        max_dd, dd_duration = PerformanceMetricsCalculator.create_drawdowns(pnl)
+
+        stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
+                 ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
+                 ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
+                 ("Drawdown Duration", "%d" % dd_duration)]
+
+        return stats
