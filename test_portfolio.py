@@ -52,7 +52,6 @@ class TestPortfolio(unittest.TestCase):
 
         fill = FillEvent(
             token='aave_usdc',
-            fixedRate=0.01,
             fee=0,
             timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
             notional=1000,
@@ -76,7 +75,6 @@ class TestPortfolio(unittest.TestCase):
 
         fill = FillEvent(
             token='aave_usdc',
-            fixedRate=0.01,
             fee=10,
             timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
             notional=1000,
@@ -156,7 +154,6 @@ class TestPortfolio(unittest.TestCase):
 
         fill = FillEvent(
             token='aave_usdc',
-            fixedRate=0.01,
             fee=10,
             timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
             notional=1000,

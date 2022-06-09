@@ -47,13 +47,3 @@ class EventLoop(object):
 
                     elif event.type == 'FILL':
                         self.portfolio.update_fill(event=event)
-
-
-
-
-
-
-
-
-
-
