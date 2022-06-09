@@ -3,6 +3,7 @@ from strategy import LongRateStrategy
 from data import HistoricCSVDataHandler
 from execution import SimulatedExecutionHandler
 from portfolio import NaivePortfolio
+from event_loop import EventLoop
 import queue
 
 
@@ -34,11 +35,24 @@ class TestEventLoop(unittest.TestCase):
             initial_capital=1000.00
         )
 
+        self.eventLoop = EventLoop(
+            events=events_queue,
+            rates=self.dataHandler,
+            strategy=self.strategy,
+            portfolio=self.portfolio,
+            executionHandler=self.executionHandler
+        )
+
 
     def test_run_outer_loop(self):
 
-        pass
+        self.eventLoop.run_outer_loop()
 
+        self.portfolio.create_equity_curve_dataframe()
+
+        equity_curve = self.portfolio.equity_curve
+
+        self.assertEqual(equity_curve.iloc[-1, -1], 11) # todo: sanity check the logic and do more tests
 
 
 if __name__ == '__main__':
