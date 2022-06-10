@@ -234,7 +234,6 @@ class NaivePortfolio(Portfolio):
 
         self.current_positions[fill.token].append(new_position)
 
-
     def update_holdings_from_fill(self, fill):
         """
         Takes a FillEvent object and updates the holdings matrix
@@ -244,12 +243,10 @@ class NaivePortfolio(Portfolio):
         fill - The FillEvent object to update the holdings with.
         """
 
-        # todo: take into account margin deposited
-
         # Update holdings list with new quantities
         self.current_holdings['fee'] += fill.fee
-        self.current_holdings['cash'] -= (fill.fee)
-        self.current_holdings['total'] -= (fill.fee)
+        self.current_holdings['cash'] -= (fill.fee + fill.margin)
+        self.current_holdings['total'] -= (fill.fee + fill.margin)
 
     def update_fill(self, event):
         """
@@ -270,7 +267,7 @@ class NaivePortfolio(Portfolio):
 
         # todo: implementation
 
-        return 10000.0
+        return 1000.0
 
     def generate_naive_order(self, signal):
         """
