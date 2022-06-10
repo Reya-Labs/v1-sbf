@@ -32,7 +32,8 @@ class TestEventLoop(unittest.TestCase):
             rates=self.dataHandler,
             events=events_queue,
             start_date='2021-03-11 14:49', # todo: should be a timestamp
-            initial_capital=1000.00
+            initial_capital=1000.00,
+            leverage=10
         )
 
         self.eventLoop = EventLoop(
@@ -52,7 +53,7 @@ class TestEventLoop(unittest.TestCase):
 
         equity_curve = self.portfolio.equity_curve
 
-        self.assertEqual(equity_curve.iloc[-1, -1], 11) # todo: sanity check the logic and do more tests
+        self.assertEqual(equity_curve.iloc[-1, -1], 1)
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ class TestEvent(unittest.TestCase):
             timestamp=TIMESTAMP,
             notional=1000,
             direction=DIRECTION,
+            margin=10
         )
 
         self.fillEvent = FillEvent(
@@ -29,7 +30,8 @@ class TestEvent(unittest.TestCase):
             fee=0,
             timestamp=TIMESTAMP,
             notional=1000,
-            direction=DIRECTION
+            direction=DIRECTION,
+            margin=10
         )
 
 
@@ -45,12 +47,14 @@ class TestEvent(unittest.TestCase):
         self.assertEqual(self.orderEvent.type, 'ORDER')
         self.assertEqual(self.orderEvent.timestamp, TIMESTAMP)
         self.assertEqual(self.orderEvent.notional, 1000)
+        self.assertEqual(self.orderEvent.margin, 10)
         self.assertEqual(self.orderEvent.direction, DIRECTION)
 
         self.assertEqual(self.fillEvent.type, 'FILL')
         self.assertEqual(self.fillEvent.token, TOKEN)
         self.assertEqual(self.fillEvent.timestamp, TIMESTAMP)
         self.assertEqual(self.fillEvent.notional, 1000)
+        self.assertEqual(self.fillEvent.margin, 10)
         self.assertEqual(self.fillEvent.fee, 0)
 
 

@@ -37,7 +37,7 @@ class TestStrategy(unittest.TestCase):
         self.strategy.calculate_signals(event=marketEvent)
         signalEvent = self.strategy.events.get()
         self.assertEqual(signalEvent.type, "SIGNAL")
-        self.assertEqual(str(signalEvent.timestamp), '2021-03-11 14:49:24+00:00')
+        self.assertEqual(str(signalEvent.timestamp), '2021-03-11 14:49:24')
         self.assertEqual(signalEvent.token, "aave_usdc")
         self.assertEqual(signalEvent.direction, "LONG")
 
