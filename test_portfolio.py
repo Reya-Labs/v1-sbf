@@ -27,7 +27,6 @@ class TestPortfolio(unittest.TestCase):
             initial_capital=1000.00
         )
 
-
     def test_update_timeindex(self):
 
         # (Token, Direction = LONG, SHORT or EXIT, Timestamp)
@@ -50,10 +49,17 @@ class TestPortfolio(unittest.TestCase):
 
     def test_update_positions_from_fill(self):
 
+        self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+
+        currentTimestamp = self.dataHandler.get_latest_rates('aave_usdc', N=1)[0][1]
+
         fill = FillEvent(
             token='aave_usdc',
             fee=0,
-            timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
+            timestamp=currentTimestamp,
             notional=1000,
             direction='LONG'
         )
@@ -64,19 +70,22 @@ class TestPortfolio(unittest.TestCase):
 
         latest_position = self.portfolio.current_positions['aave_usdc'][0]
 
-        self.assertEqual(latest_position['timestamp'], datetime(2021, 11, 28, 23, 55, 59, 342380))
+        self.assertEqual(latest_position['timestamp'], currentTimestamp)
         self.assertEqual(latest_position['direction'], "LONG")
         self.assertEqual(latest_position['notional'], 1000)
-        self.assertEqual(latest_position['fixedRate'], 0.01)
+        self.assertEqual(latest_position['fixedRate'], 0.13201851823382382)
+        self.assertEqual(latest_position['startingRateValue'], 1.0000114583092235e+27)
         self.assertEqual(latest_position['fee'], 0.0)
 
 
     def test_update_holdings_from_fill(self):
 
+        currentTimestamp = self.dataHandler.get_latest_rates('aave_usdc', N=1)[0][1]
+
         fill = FillEvent(
             token='aave_usdc',
             fee=10,
-            timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
+            timestamp=currentTimestamp,
             notional=1000,
             direction='LONG'
         )
@@ -90,11 +99,16 @@ class TestPortfolio(unittest.TestCase):
 
     def test_update_fill(self):
 
+        self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+
+        currentTimestamp = self.dataHandler.get_latest_rates('aave_usdc', N=1)[0][1]
+
         fill = FillEvent(
             token='aave_usdc',
-            fixedRate=0.01,
             fee=10,
-            timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
+            timestamp=currentTimestamp,
             notional=1000,
             direction='LONG'
         )
@@ -108,13 +122,11 @@ class TestPortfolio(unittest.TestCase):
 
         latest_position = self.portfolio.current_positions['aave_usdc'][0]
 
-        self.assertEqual(latest_position['timestamp'], datetime(2021, 11, 28, 23, 55, 59, 342380))
+        self.assertEqual(latest_position['timestamp'], currentTimestamp)
         self.assertEqual(latest_position['direction'], "LONG")
         self.assertEqual(latest_position['notional'], 1000)
-        self.assertEqual(latest_position['fixedRate'], 0.01)
+        self.assertEqual(latest_position['fixedRate'], 0.013988590453105632)
         self.assertEqual(latest_position['fee'], 10.0)
-
-        print("here")
 
     def test_generate_naive_order(self):
 
@@ -151,11 +163,15 @@ class TestPortfolio(unittest.TestCase):
     def test_equity_curve_dataframe(self):
 
         self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+        self.dataHandler.update_rates()
+
+        currentTimestamp = self.dataHandler.get_latest_rates('aave_usdc', N=1)[0][1]
 
         fill = FillEvent(
             token='aave_usdc',
             fee=10,
-            timestamp=datetime(2021, 11, 28, 23, 55, 59, 342380),
+            timestamp=currentTimestamp,
             notional=1000,
             direction='LONG'
         )

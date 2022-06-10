@@ -101,11 +101,38 @@ class NaivePortfolio(Portfolio):
         d['total'] = self.initial_capital
         return d
 
-    def compute_market_value(self, positions, rates):
+    def years_since_swap_start(self, positionStartTimestamp, currentTimestamp):
+
+        time_delta_in_years = (currentTimestamp - positionStartTimestamp).total_seconds() / 31536000 # 31536000 is the number of seconds in a year
+
+        return time_delta_in_years
+
+    def compute_total_value_of_positions(self, positions, currentRateTuple):
 
         # todo: docs & implementation
+        # todo: also add margin in the position
+        total_cashflow = 0
+        for position in positions:
 
-        return 10000.00
+            # cover the cashflow from IRS initiation to now
+
+            yearsSinceSwapStart = self.years_since_swap_start(
+                positionStartTimestamp=position['timestamp'],
+                currentTimestamp=currentRateTuple[1]
+            )
+
+            fixedFactorFromStartToNow = position['fixedRate'] * yearsSinceSwapStart
+            variableFactorFromStartToNow = currentRateTuple[2] / position['startingRateValue']
+
+            cashflow = position['notional'] * (variableFactorFromStartToNow - fixedFactorFromStartToNow)
+
+            if position['direction'] == "SHORT":
+                cashflow = -cashflow
+
+            total_cashflow += cashflow
+
+        return total_cashflow
+
 
     def update_timeindex(self, event):
         """
@@ -138,22 +165,51 @@ class NaivePortfolio(Portfolio):
         dh['total'] = self.current_holdings['cash']
 
         for t in self.token_list:
-            # Approximation to the real value of all interest rate swap contracts held by the trader
-            # OLD: market_value = self.current_positions[s] * bars[s][0][5]
-            market_value = self.compute_market_value(self.current_positions[t], rates[t])
+            # current way of computing current value (note, the sum below is across all the positions in token t):
+            # market_value = sum(position margin + irs cashflow of the position until current timestamp)
+            market_value = self.compute_total_value_of_positions(self.current_positions[t], rates[t][0])
             dh[t] = market_value
             dh['total'] += market_value
 
         # Append the current holdings
         self.all_holdings.append(dh)
 
-    def get_current_fixed_rate(self):
+    def annualize_variable_rate(self, variableRate, timeDelta):
 
-        # fixedRate - realised fixed rate (may be affected by a slippage/market impact model)
-        # todo: implementation
-        # this should be a function of self.rates, we can retrieve the latest N bars and calculate the moving average
+        # todo: move to utils
+        # have two ways to annualise: with and without compounding
 
-        return 0.1
+        # with compounding
+        numberOfCompoundingPeriodsInYear = 31536000 /  timeDelta.total_seconds() # 31536000 is number of seconds in a year
+        annualizedVariableRate = (1 + variableRate)**(numberOfCompoundingPeriodsInYear) - 1
+
+        return annualizedVariableRate
+
+    def get_current_fixed_rate(self, token):
+
+        # todo: we might want to set N to a higehr period
+        two_latest_rates = self.rates.get_latest_rates(token=token, N=2)
+
+        fr = None
+
+        if len(two_latest_rates) == 2:
+            liquidityIndex1 = two_latest_rates[0][2]
+            liquidityIndex2 = two_latest_rates[1][2]
+
+            variableRate = (liquidityIndex2 / liquidityIndex1) - 1.0
+
+            # assume the fixed rate is equal to the annualizedVariableRate calculated from the variableFactor based on the last two bars
+            fr = self.annualize_variable_rate(variableRate=variableRate, timeDelta=two_latest_rates[1][1] - two_latest_rates[0][1])
+
+        return fr
+
+    def get_current_rate_value(self, token):
+
+        latest_rates = self.rates.get_latest_rates(token=token, N=1)
+
+        latest_rate_value = latest_rates[0][2]
+
+        return latest_rate_value
 
     def update_positions_from_fill(self, fill):
         """
@@ -172,7 +228,8 @@ class NaivePortfolio(Portfolio):
         new_position['timestamp'] = fill.timestamp
         new_position['direction'] = fill.direction
         new_position['notional'] = fill.notional
-        new_position['fixedRate'] = self.get_current_fixed_rate()
+        new_position['fixedRate'] = self.get_current_fixed_rate(token=fill.token)
+        new_position['startingRateValue'] = self.get_current_rate_value(token=fill.token)
         new_position['fee'] = fill.fee
 
         self.current_positions[fill.token].append(new_position)
@@ -238,7 +295,6 @@ class NaivePortfolio(Portfolio):
             order_event = self.generate_naive_order(event)
             self.events.put(order_event)
 
-
     def create_equity_curve_dataframe(self):
         """
         Creates a pandas DataFrame from the all_holdings
@@ -251,6 +307,7 @@ class NaivePortfolio(Portfolio):
 
         self.equity_curve = curve
 
+    # todo: unit test
     def output_summary_stats(self):
         """
         Creates a list of summary statistics for the portfolio such

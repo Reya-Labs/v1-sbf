@@ -129,6 +129,9 @@ class HistoricCSVDataHandler(DataHandler):
                                       }
                                   )
 
+            # remove timezone from dates
+            self.token_data[t].index = self.token_data[t].index.tz_localize(None)
+
             # Combine the index to pad forward values
             if comb_index is None:
                 comb_index = self.token_data[t].index
