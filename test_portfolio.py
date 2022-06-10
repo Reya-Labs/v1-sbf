@@ -199,7 +199,5 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(equity_curve.iloc[1, :]['equity_curve'], 1.99)  ## todo: sanity check with more realistic values
 
 
-
-
 if __name__ == '__main__':
     unittest.main()

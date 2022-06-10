@@ -266,6 +266,12 @@ class NaivePortfolio(Portfolio):
 
         return 10000.0
 
+    def generate_naive_margin(self):
+
+        # todo: implementation
+
+        return 10000.0
+
     def generate_naive_order(self, signal):
         """
         Simply trades an OrderEvent object as a constant notional
@@ -281,7 +287,7 @@ class NaivePortfolio(Portfolio):
             timestamp=signal.timestamp,
             direction=signal.direction,
             notional=self.generate_naive_notional(),
-
+            margin=self.generate_naive_margin()
         )
 
         return order

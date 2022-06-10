@@ -55,7 +55,7 @@ class OrderEvent(Event):
     IRS Swap notional and a direction.
     """
 
-    def __init__(self, token, direction, timestamp, notional):
+    def __init__(self, token, direction, timestamp, notional, margin):
         """
         Initialises the order event which has
         a IRS notional traded and its direction, 'LONG/VT' or
@@ -69,6 +69,7 @@ class OrderEvent(Event):
         timestamp - The timestamp at which the signal was generated
         direction - 'LONG' or 'SHORT'.
         notional - Non-negative integer for notional amount (margin*leverage) traded
+        margin   - Non-negative integer for margin amount (i.e. collateral to support the IRS position)
         """
 
         self.type = 'ORDER'
@@ -76,13 +77,14 @@ class OrderEvent(Event):
         self.timestamp = timestamp
         self.direction = direction
         self.notional = notional
+        self.margin = margin
 
     def print_order(self):
         """
         Outputs the values within the Order.
         """
-        print ("Order: Token=%s, Timestamp=%s, Notional=%s, Direction=%s" % \
-              (self.token, self.timestamp, self.notional, self.direction))
+        print ("Order: Token=%s, Timestamp=%s, Notional=%s, Notional=%s, Direction=%s" % \
+              (self.token, self.timestamp, self.notional, self.margin, self.direction))
 
 
 
