@@ -41,7 +41,7 @@ class NaivePortfolio(Portfolio):
     used to test simpler strategies such as LongRateStrategy.
     """
 
-    def __init__(self, rates, events, start_date, initial_capital=100000.0):
+    def __init__(self, rates, events, start_date, leverage, initial_capital=1.0):
         """
         Initialises the portfolio with rates and an event queue.
         Also includes a starting datetime index and initial capital
@@ -59,6 +59,7 @@ class NaivePortfolio(Portfolio):
         self.token_list = self.rates.token_list
         self.start_date = start_date
         self.initial_capital = initial_capital
+        self.leverage = leverage
 
         self.all_positions = self.construct_all_positions()
         self.current_positions = dict((k, v) for k, v in [(s, []) for s in self.token_list])
@@ -132,7 +133,6 @@ class NaivePortfolio(Portfolio):
             total_cashflow += (cashflow + position['margin'])
 
         return total_cashflow
-
 
     def update_timeindex(self, event):
         """
@@ -260,15 +260,14 @@ class NaivePortfolio(Portfolio):
 
     def generate_naive_notional(self):
 
-        # todo: implementation
-
-        return 10000.0
+        return self.initial_capital * self.leverage
 
     def generate_naive_margin(self):
 
-        # todo: implementation
+        # in the naive case where we have a strategy running on top of a single pool we push all
+        # capital into the margin account for a position in the given pool
 
-        return 1000.0
+        return self.initial_capital
 
     def generate_naive_order(self, signal):
         """
