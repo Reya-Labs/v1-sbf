@@ -192,11 +192,11 @@ class TestPortfolio(unittest.TestCase):
 
         self.assertEqual(equity_curve.iloc[1, :]['cash'], 990)
         self.assertEqual(equity_curve.iloc[1, :]['fee'], 10)
-        self.assertEqual(equity_curve.iloc[1, :]['total'], 10990)
+        self.assertEqual(equity_curve.iloc[1, :]['total'], 1990.0)
         # corresponds to the market value
-        self.assertEqual(equity_curve.iloc[1, :]['aave_usdc'], 10000)  ## todo: sanity check with more realistic values
-        self.assertEqual(equity_curve.iloc[1, :]['returns'], 9.99) ## todo: sanity check with more realistic values
-        self.assertEqual(equity_curve.iloc[1, :]['equity_curve'], 10.99)  ## todo: sanity check with more realistic values
+        self.assertEqual(equity_curve.iloc[1, :]['aave_usdc'], 1000.0)  ## todo: sanity check with more realistic values
+        self.assertEqual(equity_curve.iloc[1, :]['returns'], 0.99) ## todo: sanity check with more realistic values
+        self.assertEqual(equity_curve.iloc[1, :]['equity_curve'], 1.99)  ## todo: sanity check with more realistic values
 
 
 
