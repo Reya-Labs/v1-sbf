@@ -123,7 +123,7 @@ class NaivePortfolio(Portfolio):
             )
 
             fixedFactorFromStartToNow = position['fixedRate'] * yearsSinceSwapStart
-            variableFactorFromStartToNow = currentRateTuple[2] / position['startingRateValue']
+            variableFactorFromStartToNow = (currentRateTuple[2] / position['startingRateValue'] - 1)
 
             cashflow = position['notional'] * (variableFactorFromStartToNow - fixedFactorFromStartToNow)
 
