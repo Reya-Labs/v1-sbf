@@ -109,8 +109,8 @@ class NaivePortfolio(Portfolio):
 
     def compute_total_value_of_positions(self, positions, currentRateTuple):
 
-        # todo: docs & implementation
-        # todo: also add margin in the position
+        # todo: inline docs
+
         total_cashflow = 0
         for position in positions:
 
@@ -129,7 +129,7 @@ class NaivePortfolio(Portfolio):
             if position['direction'] == "SHORT":
                 cashflow = -cashflow
 
-            total_cashflow += cashflow
+            total_cashflow += (cashflow + position['margin'])
 
         return total_cashflow
 
@@ -187,7 +187,7 @@ class NaivePortfolio(Portfolio):
 
     def get_current_fixed_rate(self, token):
 
-        # todo: we might want to set N to a higehr period
+        # todo: we might want to set N to a higher period
         two_latest_rates = self.rates.get_latest_rates(token=token, N=2)
 
         fr = None
@@ -228,6 +228,7 @@ class NaivePortfolio(Portfolio):
         new_position['timestamp'] = fill.timestamp
         new_position['direction'] = fill.direction
         new_position['notional'] = fill.notional
+        new_position['margin'] = fill.margin
         new_position['fixedRate'] = self.get_current_fixed_rate(token=fill.token)
         new_position['startingRateValue'] = self.get_current_rate_value(token=fill.token)
         new_position['fee'] = fill.fee
