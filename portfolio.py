@@ -169,6 +169,7 @@ class NaivePortfolio(Portfolio):
             market_value = self.compute_total_value_of_positions(self.current_positions[t], rates[t][0])
             dh[t] = market_value
             dh[f'fixedRate_{t}'] = self.get_current_fixed_rate(t)
+            dh[f'liquidityIndex_{t}'] = (self.rates.get_latest_rates(token=t, N=1)[0][2] / 1e27)
             dh['total'] += market_value
 
         # Append the current holdings

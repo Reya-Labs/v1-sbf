@@ -20,7 +20,6 @@ class TestLongRateStrategyBacktest(unittest.TestCase):
         equity_curve = portfolio.equity_curve.dropna()
         self.assertEqual(equity_curve.iloc[-1, -1], 0.9990527468734619)
 
-
     def test_run_levered_backtest(self):
 
         self.leveredLongRateStrategyBacktest = LongRateStrategyBacktest(
