@@ -10,7 +10,12 @@ class TestLongRateStrategyBacktest(unittest.TestCase):
 
     def test_run_backtest(self):
 
-        pass
+        self.longRateStrategyBacktest.run_backtest()
+
+
+
+
+        print("here")
 
 
 if __name__ == '__main__':

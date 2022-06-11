@@ -21,7 +21,7 @@ class TestPortfolio(unittest.TestCase):
         self.portfolio = NaivePortfolio(
             rates=self.dataHandler,
             events=events_queue,
-            start_date='2021-03-11 14:49',
+            start_date_time='2021-03-11 14:49',
             initial_capital=1000.00,
             leverage=10
         )

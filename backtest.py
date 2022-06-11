@@ -20,39 +20,41 @@ class Backtest(object):
 
 class LongRateStrategyBacktest(Backtest):
 
-    def __init__(self):
+    def __init__(self, start_date_time='2022-04-01 00:00:00', end_date_time='2022-06-01 00:00:00'):
 
-        events_queue = queue.Queue()
+        self.events_queue = queue.Queue()
 
-        dataHandler = HistoricCSVDataHandler(
-            events=events_queue,
+        self.dataHandler = HistoricCSVDataHandler(
+            events=self.events_queue,
             csv_dir="datasets",
-            token_list=["aave_usdc"]
+            token_list=["aave_usdc"],
+            start_date_time=start_date_time,
+            end_date_time=end_date_time
         )
 
-        strategy = LongRateStrategy(
-            rates=dataHandler,
-            events=events_queue
+        self.strategy = LongRateStrategy(
+            rates=self.dataHandler,
+            events=self.events_queue
         )
 
-        portfolio = NaivePortfolio(
-            rates=dataHandler,
-            events=events_queue,
-            start_date='2022-04-15 17:01:55',
+        self.portfolio = NaivePortfolio(
+            rates=self.dataHandler,
+            events=self.events_queue,
+            start_date_time=start_date_time,
             leverage=1,
             initial_capital=1.0
         )
 
-        executionHandler = SimulatedExecutionHandler(
-            events=events_queue
+        self.executionHandler = SimulatedExecutionHandler(
+            events=self.events_queue
         )
 
         self.eventLoop = EventLoop(
             events=queue.Queue(),
-            rates=dataHandler,
-            strategy=strategy,
-            portfolio=portfolio,
-            executionHandler=executionHandler
+            rates=self.dataHandler,
+            strategy=self.strategy,
+            portfolio=self.portfolio,
+            executionHandler=self.executionHandler
         )
 
     def run_backtest(self):

@@ -41,7 +41,7 @@ class NaivePortfolio(Portfolio):
     used to test simpler strategies such as LongRateStrategy.
     """
 
-    def __init__(self, rates, events, start_date, leverage, initial_capital=1.0):
+    def __init__(self, rates, events, start_date_time, leverage, initial_capital=1.0):
         """
         Initialises the portfolio with rates and an event queue.
         Also includes a starting datetime index and initial capital
@@ -57,7 +57,7 @@ class NaivePortfolio(Portfolio):
         self.rates = rates
         self.events = events
         self.token_list = self.rates.token_list
-        self.start_date = start_date
+        self.start_date_time = start_date_time
         self.initial_capital = initial_capital
         self.leverage = leverage
 
@@ -74,7 +74,7 @@ class NaivePortfolio(Portfolio):
         """
 
         d = dict((k,v) for k, v in [(s, []) for s in self.token_list])
-        d['datetime'] = self.start_date
+        d['datetime'] = self.start_date_time
         return [d]
 
     def construct_all_holdings(self):
@@ -84,7 +84,7 @@ class NaivePortfolio(Portfolio):
         """
         # d = dict((k,v) for k, v in [(s, 0.0) for s in self.token_list])
         d = {}
-        d['datetime'] = self.start_date
+        d['datetime'] = self.start_date_time
         d['cash'] = self.initial_capital
         d['fee'] = 0.0
         d['total'] = self.initial_capital
