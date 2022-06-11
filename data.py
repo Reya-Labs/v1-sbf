@@ -48,7 +48,7 @@ class HistoricCSVDataHandler(DataHandler):
     trading interface.
     """
 
-    def __init__(self, events, csv_dir, token_list):
+    def __init__(self, events, csv_dir, token_list, start_date_time=None, end_date_time=None):
         """
         Initialises the historic data handler by requesting
         the location of the CSV files and a list of tokens.
@@ -69,6 +69,8 @@ class HistoricCSVDataHandler(DataHandler):
         self.latest_token_data = {}
         self.continue_backtest = True
 
+        self.start_date_time = start_date_time
+        self.end_date_time = end_date_time
         self._open_convert_csv_files()
 
     def update_rates(self):
@@ -128,6 +130,17 @@ class HistoricCSVDataHandler(DataHandler):
                                           'liquidityIndex': "float64"
                                       }
                                   )
+
+            # apply start and end datetime filters if they exist
+
+            if (self.start_date_time and self.end_date_time):
+
+                start_end_filter = self.token_data[t].index.to_series().between(
+                    self.start_date_time,
+                    self.end_date_time
+                )
+
+                self.token_data[t] = self.token_data[t][start_end_filter]
 
             # remove timezone from dates
             self.token_data[t].index = self.token_data[t].index.tz_localize(None)
