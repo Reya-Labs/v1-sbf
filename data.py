@@ -118,6 +118,13 @@ class HistoricCSVDataHandler(DataHandler):
 
         return df
 
+    def _adjust_liquidity_index_frequency(self, df, freq='D'):
+
+        df = df.resample(freq).pad()
+        df = df.dropna()
+
+        return df
+
     def _open_convert_csv_files(self):
         """
         Opens the CSV files from the data directory, converting
@@ -141,6 +148,12 @@ class HistoricCSVDataHandler(DataHandler):
 
             # interpolate the liquidity index
             self.token_data[t] = self._interpolate_liquidity_index(
+                df=self.token_data[t]
+            )
+
+            # change dataset frequency to the one specified by the data handler
+            # todo: add frequency to the data handler init function
+            self.token_data[t] = self._adjust_liquidity_index_frequency(
                 df=self.token_data[t]
             )
 
