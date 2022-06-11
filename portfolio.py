@@ -157,7 +157,6 @@ class NaivePortfolio(Portfolio):
         self.all_positions.append(dp)
 
         # Update holdings
-        # dh = dict((k,v) for k, v in [(s, 0) for s in self.token_list])
         dh = {}
         dh['datetime'] = rates[self.token_list[0]][0][1]
         dh['cash'] = self.current_holdings['cash']
@@ -169,6 +168,7 @@ class NaivePortfolio(Portfolio):
             # market_value = sum(position margin + irs cashflow of the position until current timestamp)
             market_value = self.compute_total_value_of_positions(self.current_positions[t], rates[t][0])
             dh[t] = market_value
+            dh[f'fixedRate_{t}'] = self.get_current_fixed_rate(t)
             dh['total'] += market_value
 
         # Append the current holdings

@@ -13,6 +13,7 @@ class TestLongRateStrategyBacktest(unittest.TestCase):
         portfolio = self.longRateStrategyBacktest.run_backtest()
         portfolio.create_equity_curve_dataframe()
         equity_curve = portfolio.equity_curve.dropna()
+        self.assertEqual(equity_curve.iloc[-1, -1], 0.9990527468734619)
 
 
 if __name__ == '__main__':
