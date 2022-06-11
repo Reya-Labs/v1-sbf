@@ -22,7 +22,7 @@ class EventLoop(object):
             else:
                 break
 
-        self.run_inner_loop()
+            self.run_inner_loop()
 
     def run_inner_loop(self):
 
@@ -33,17 +33,17 @@ class EventLoop(object):
                 event = self.events.get(False)
             except queue.Empty:
                 break
-            else:
-                if event is not None:
-                    if event.type == 'MARKET':
-                        self.strategy.calculate_signals(event=event)
-                        self.portfolio.update_timeindex(event=event)
 
-                    elif event.type == 'SIGNAL':
-                        self.portfolio.update_signal(event=event)
+            if event is not None:
+                if event.type == 'MARKET':
+                    self.strategy.calculate_signals(event=event)
+                    self.portfolio.update_timeindex(event=event)
 
-                    elif event.type == 'ORDER':
-                        self.executionHandler.execute_order(event=event)
+                elif event.type == 'SIGNAL':
+                    self.portfolio.update_signal(event=event)
 
-                    elif event.type == 'FILL':
-                        self.portfolio.update_fill(event=event)
+                elif event.type == 'ORDER':
+                    self.executionHandler.execute_order(event=event)
+
+                elif event.type == 'FILL':
+                    self.portfolio.update_fill(event=event)

@@ -50,7 +50,7 @@ class LongRateStrategyBacktest(Backtest):
         )
 
         self.eventLoop = EventLoop(
-            events=queue.Queue(),
+            events=self.events_queue,
             rates=self.dataHandler,
             strategy=self.strategy,
             portfolio=self.portfolio,
@@ -59,6 +59,6 @@ class LongRateStrategyBacktest(Backtest):
 
     def run_backtest(self):
 
-        self.eventLoop.run_inner_loop()
+        self.eventLoop.run_outer_loop()
 
         return self.eventLoop.portfolio
