@@ -20,7 +20,9 @@ class Backtest(object):
 
 class LongRateStrategyBacktest(Backtest):
 
-    def __init__(self, start_date_time='2022-04-01 00:00:00', end_date_time='2022-06-01 00:00:00'):
+    def __init__(self, start_date_time='2022-04-01 00:00:00',
+                 end_date_time='2022-06-01 00:00:00',
+                 leverage=1.0, initial_capital=1.0):
 
         self.events_queue = queue.Queue()
 
@@ -41,8 +43,8 @@ class LongRateStrategyBacktest(Backtest):
             rates=self.dataHandler,
             events=self.events_queue,
             start_date_time=start_date_time,
-            leverage=1,
-            initial_capital=1.0
+            leverage=leverage,
+            initial_capital=initial_capital
         )
 
         self.executionHandler = SimulatedExecutionHandler(

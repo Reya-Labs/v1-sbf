@@ -19,6 +19,9 @@ class TestEventLoop(unittest.TestCase):
             token_list=["aave_usdc"]
         )
 
+        # push the rates by one date to enable fixed rate calculation
+        self.dataHandler.update_rates()
+
         self.strategy = LongRateStrategy(
             rates=self.dataHandler,
             events=events_queue
@@ -53,7 +56,7 @@ class TestEventLoop(unittest.TestCase):
 
         equity_curve = self.portfolio.equity_curve
 
-        self.assertEqual(equity_curve.iloc[-1, -1], 1)
+        self.assertEqual(equity_curve.iloc[-1, -1], 1.590334362052235)
 
 
 if __name__ == '__main__':

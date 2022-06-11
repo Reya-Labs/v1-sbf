@@ -224,6 +224,9 @@ class NaivePortfolio(Portfolio):
 
         # Update the list of current positions with the newly traded IRS contract
 
+        if self.get_current_fixed_rate(token=fill.token) is None:
+            raise Exception("Cannot calculate the fixed rate")
+
         new_position = {}
         new_position['timestamp'] = fill.timestamp
         new_position['direction'] = fill.direction
