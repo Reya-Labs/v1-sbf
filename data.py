@@ -108,7 +108,15 @@ class HistoricCSVDataHandler(DataHandler):
         for b in self.token_data[token]:
             yield tuple([token, b[0], b[1]['liquidityIndex']])
 
+    def _interpolate_liquidity_index(self, df, freq='H'):
 
+        # resample to follow consistent frequency
+        df = df.resample(freq).mean()
+
+        # fill in the gaps by interpolating between adjacent known values of the liquidity index
+        df = df.interpolate(method='linear')
+
+        return df
 
     def _open_convert_csv_files(self):
         """
@@ -130,6 +138,11 @@ class HistoricCSVDataHandler(DataHandler):
                                           'liquidityIndex': "float64"
                                       }
                                   )
+
+            # interpolate the liquidity index
+            self.token_data[t] = self._interpolate_liquidity_index(
+                df=self.token_data[t]
+            )
 
             # apply start and end datetime filters if they exist
 
