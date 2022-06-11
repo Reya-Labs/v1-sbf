@@ -49,6 +49,9 @@ class LongRateStrategyBacktest(Backtest):
             events=self.events_queue
         )
 
+        # one day needs to pass to enable fixed rate calculations which needs at least two historical rate values
+        self.dataHandler.update_rates()
+
         self.eventLoop = EventLoop(
             events=self.events_queue,
             rates=self.dataHandler,

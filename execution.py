@@ -63,7 +63,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
             fill_event = FillEvent(
                 token=event.token,
                 fee=0,
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=event.timestamp,
                 notional=event.notional,
                 direction=event.direction,
                 margin=event.margin
