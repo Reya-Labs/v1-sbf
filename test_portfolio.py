@@ -39,7 +39,7 @@ class TestPortfolio(unittest.TestCase):
         all_holdings = self.portfolio.all_holdings
 
         self.assertEqual(all_holdings[1]['aave_usdc'], 0)
-        self.assertEqual(str(all_holdings[1]['datetime']), '2021-03-11 14:49:24')
+        self.assertEqual(str(all_holdings[1]['datetime']), '2021-03-12 00:00:00')
         self.assertEqual(all_holdings[1]['cash'], 1000)
         self.assertEqual(all_holdings[1]['fee'], 0.0)
         self.assertEqual(all_holdings[1]['total'], 1000.0)
@@ -72,8 +72,8 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(latest_position['timestamp'], currentTimestamp)
         self.assertEqual(latest_position['direction'], "LONG")
         self.assertEqual(latest_position['notional'], 1000)
-        self.assertEqual(latest_position['fixedRate'], 0.13201851823382382)
-        self.assertEqual(latest_position['startingRateValue'], 1.0000114583092235e+27)
+        self.assertEqual(latest_position['fixedRate'], 0.0)
+        self.assertEqual(latest_position['startingRateValue'],  1e+27)
         self.assertEqual(latest_position['fee'], 0.0)
 
 
@@ -127,7 +127,7 @@ class TestPortfolio(unittest.TestCase):
         self.assertEqual(latest_position['timestamp'], currentTimestamp)
         self.assertEqual(latest_position['direction'], "LONG")
         self.assertEqual(latest_position['notional'], 1000)
-        self.assertEqual(latest_position['fixedRate'], 0.013988590453105632)
+        self.assertEqual(latest_position['fixedRate'], 0.0)
         self.assertEqual(latest_position['fee'], 10.0)
 
     def test_generate_naive_order(self):

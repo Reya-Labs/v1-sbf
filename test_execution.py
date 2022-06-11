@@ -19,7 +19,8 @@ class TestExecution(unittest.TestCase):
             token='aave_usdc',
             direction='LONG',
             timestamp=datetime.utcnow(),
-            notional=10000
+            notional=10000,
+            margin=100
         )
 
         self.executionHandler.execute_order(
@@ -31,6 +32,7 @@ class TestExecution(unittest.TestCase):
         self.assertEqual(fillEvent.direction, "LONG")
         self.assertEqual(fillEvent.fee, 0.0)
         self.assertEqual(fillEvent.notional, 10000)
+        self.assertEqual(fillEvent.margin, 100)
         # todo: test timestamp
         self.assertEqual(fillEvent.token, "aave_usdc")
 

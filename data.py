@@ -48,7 +48,8 @@ class HistoricCSVDataHandler(DataHandler):
     trading interface.
     """
 
-    def __init__(self, events, csv_dir, token_list, start_date_time=None, end_date_time=None):
+    def __init__(self, events, csv_dir, token_list, start_date_time=None, end_date_time=None,
+                 interpolation_frequency='H', backtest_frequency='D'):
         """
         Initialises the historic data handler by requesting
         the location of the CSV files and a list of tokens.
@@ -71,6 +72,9 @@ class HistoricCSVDataHandler(DataHandler):
 
         self.start_date_time = start_date_time
         self.end_date_time = end_date_time
+        self.interpolation_frequency = interpolation_frequency
+        self.backtest_frequency = backtest_frequency
+
         self._open_convert_csv_files()
 
     def update_rates(self):
@@ -108,19 +112,19 @@ class HistoricCSVDataHandler(DataHandler):
         for b in self.token_data[token]:
             yield tuple([token, b[0], b[1]['liquidityIndex']])
 
-    def _interpolate_liquidity_index(self, df, freq='H'):
+    def _interpolate_liquidity_index(self, df):
 
         # resample to follow consistent frequency
-        df = df.resample(freq).mean()
+        df = df.resample(self.interpolation_frequency).mean()
 
         # fill in the gaps by interpolating between adjacent known values of the liquidity index
         df = df.interpolate(method='linear')
 
         return df
 
-    def _adjust_liquidity_index_frequency(self, df, freq='D'):
+    def _adjust_liquidity_index_frequency(self, df):
 
-        df = df.resample(freq).pad()
+        df = df.resample(self.backtest_frequency).ffill()
         df = df.dropna()
 
         return df
