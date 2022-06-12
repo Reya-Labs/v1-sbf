@@ -1,5 +1,3 @@
-# portfolio.py
-
 import pandas as pd
 
 from abc import ABCMeta, abstractmethod
