@@ -2,3 +2,4 @@
 /datasets/
 /.env
 .DS_Store
+/reports/
