@@ -3,6 +3,9 @@ from openpyxl.chart import LineChart, Reference
 import pandas as pd
 
 
+# todo: format date axis (add spacing, rotation & shorten)
+# todo: adjust the scaling of the y-axis
+
 class Reporter(object):
 
     __metaclass__ = ABCMeta
@@ -41,7 +44,7 @@ class SimpleBacktestReporter(Reporter):
             max_row = ws.max_row
 
             # Refer to the data of equity_curve by the range of rows and cols on the sheet
-            values_equity_curve = Reference(ws, min_col=5, min_row=1, max_col=5, max_row=max_row)
+            values_equity_curve = Reference(ws, min_col=9, min_row=1, max_col=9, max_row=max_row)
 
             # Refer to the date
             dates = Reference(ws, min_col=1, min_row=2, max_col=1, max_row=max_row)
@@ -58,12 +61,12 @@ class SimpleBacktestReporter(Reporter):
             chart.x_axis.majorTimeUnit = 'days'
             chart.x_axis.title = 'Date'
 
-            # Add title to the chart
-            chart.title = 'Backtest Equity Curve'
+            chart.y_axis.scaling.max = 1.009 # todo: hacky hardcoded
+            chart.y_axis.scaling.min = 0.98 # todo: hacky hardcoded
 
-            # Refer to equity_curve data, which is with index 1 within the chart, and style it
-            s1 = chart.series[1]
-            s1.graphicalProperties.line.dashStyle = 'sysDot'
-            # Add the chart to the cell of G12 on the sheet ws
-            ws.add_chart(chart, 'G12')
+            # Add title to the chart
+            chart.title = 'Equity Curve'
+
+            # Add the chart to the cell of M12 on the sheet ws
+            ws.add_chart(chart, 'M12')
 
