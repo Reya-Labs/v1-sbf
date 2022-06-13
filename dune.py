@@ -48,19 +48,22 @@ class Dune:
         return df
 
 
-    def query_aave_liquidity_index(self):
+    def query_aave_liquidity_index(self, query_id=891837, column_name="liquidityIndexUSDC"):
 
-        # just works for USDC for now, need to adapt the dune query to work with all sorts of rates
+        # aave usdc query
         # https://dune.com/queries/891837
 
-        raw_data = self.query_result(query_id=891837)['data']['get_result_by_result_id']
+        # aave dai query
+        # https://dune.com/queries/905965
+
+        raw_data = self.query_result(query_id=query_id)['data']['get_result_by_result_id']
 
         df = pd.DataFrame(columns=['date', 'liquidityIndex'])
 
         for i in range(len(raw_data)):
 
             date = raw_data[i]['data']['date']
-            liquidityIndex = raw_data[i]['data']['liquidityIndexUSDC']
+            liquidityIndex = raw_data[i]['data'][column_name]
 
             df = df.append({
                 'date': date,
@@ -75,5 +78,6 @@ if __name__ == '__main__':
     # dune = Dune(username=os.environ.get('USERNAME'), password=os.environ.get("PASSWORD"))
     dune = Dune(username=os.environ.get('USERNAME'), password=os.environ.get("PASSWORD"))
     # df = dune.query_euler_interest_rates(coin='usdc')
-    aave_liquidity_index_df = dune.query_aave_liquidity_index()
+    aave_liquidity_index_df = dune.query_aave_liquidity_index(query_id=905965, column_name="liquidityIndexDAI")
+    aave_liquidity_index_df.to_csv("datasets/aave_dai.csv", index=False)
 

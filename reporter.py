@@ -101,8 +101,6 @@ class SimpleBacktestReporter(Reporter):
                                                         )
 
             # place the backtest summary stats into the report
-
-
             # todo: better format below dataframe
             backtest_summary_df = pd.DataFrame(self.summary_stats)
             backtest_summary_df.to_excel(writer, sheet_name="summary_stats")
