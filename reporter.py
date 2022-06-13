@@ -29,7 +29,7 @@ class SimpleBacktestReporter(Reporter):
 
     def _plot_line_chart_against_date_in_excel(self, writer, y_axis_min=0.98, y_axis_max=1.009,
                                                sheet="backtest_results", y_series_col=9,
-                                               chart_title="Equity Curve", cell_ref="M12"):
+                                               chart_title="Equity Curve", cell_ref="K3"):
         # Add a line chart
         # Point to the sheet 'backtest_results', where the chart will be added
         wb = writer.book
@@ -65,7 +65,7 @@ class SimpleBacktestReporter(Reporter):
         # Add the chart to the cell of M12 on the sheet ws
         ws.add_chart(chart, cell_ref)
 
-    def generate_report(self, report_title='test_report', y_axis_min=0.98, y_axis_max=1.009):
+    def generate_report(self, report_title='test_report'):
 
         # Set up an ExcelWriter
         with pd.ExcelWriter(f'reports/{report_title}.xlsx', engine='openpyxl') as writer:
@@ -74,20 +74,36 @@ class SimpleBacktestReporter(Reporter):
             self.backtest_results_df.to_excel(writer, sheet_name="backtest_results")
 
             # add line chart for the equity curve
-            self._plot_line_chart_against_date_in_excel(writer=writer, y_axis_min=y_axis_min, y_axis_max=y_axis_max)
+
+            min_equity_curve = self.backtest_results_df.loc[:, "equity_curve"].min()
+            max_equity_curve = self.backtest_results_df.loc[:, "equity_curve"].max()
+
+            self._plot_line_chart_against_date_in_excel(writer=writer, y_axis_min=min_equity_curve, y_axis_max=max_equity_curve)
 
             # add line chart for the returns curve
-            self._plot_line_chart_against_date_in_excel(writer=writer, y_axis_min=y_axis_min, y_axis_max=y_axis_max,
+
+            min_return = self.backtest_results_df.loc[:, "returns"].min()
+            max_return = self.backtest_results_df.loc[:, "returns"].max()
+
+            self._plot_line_chart_against_date_in_excel(writer=writer, y_axis_min=min_return, y_axis_max=max_return,
                                                         sheet="backtest_results", y_series_col=8,
-                                                        chart_title="Returns Plot", cell_ref="M40"
+                                                        chart_title="Daily Returns", cell_ref="K15"
                                                         )
 
-            # add line chart for liquidity index curve
+            # add line chart for the fixed rate (apy) of aave usdc
 
-            # add line chart for the fixed rate curve
+            min_fixed_rate = self.backtest_results_df.loc[:, "fixedRate_aave_usdc"].min()
+            max_fixed_rate = self.backtest_results_df.loc[:, "fixedRate_aave_usdc"].max()
 
-            # add line chart for cumulative apy curve
+            self._plot_line_chart_against_date_in_excel(writer=writer, y_axis_min=min_fixed_rate, y_axis_max=max_fixed_rate,
+                                                        sheet="backtest_results", y_series_col=6,
+                                                        chart_title="Daily Fixed Rate (APY)", cell_ref="K27"
+                                                        )
 
             # place the backtest summary stats into the report
 
+
+            # todo: better format below dataframe
+            backtest_summary_df = pd.DataFrame(self.summary_stats)
+            backtest_summary_df.to_excel(writer, sheet_name="summary_stats")
 
