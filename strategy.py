@@ -3,6 +3,7 @@ from matplotlib.cbook import Stack
 import numpy as np
 from event import SignalEvent
 
+SECONDS_IN_YEAR = 31536000
 
 class Strategy(object):
     """
@@ -36,34 +37,46 @@ class LongShortMomentumStrategy(Strategy):
     average we don't hold a position, and the exuction handler exits the trade.
     """
 
-    def __init__(self, rates, events, lookback=30, buffer=1):
+    def __init__(self, rates, events, trend_lookback=30, apy_lookback=1, buffer=1):
         
         self.rates = rates
         self.token_list = self.rates.token_list
         self.events = events
-        self.lookback = lookback
+        self.trend_lookback = trend_lookback
+        self.apy_lookback = apy_lookback
         self.buffer = buffer
 
     def calculate_signals(self, event):
         if event.type == "MARKET":
             for t in self.token_list:
-                rates = self.rates.get_latest_rates(t, N=self.lookback+1) # List of (token, timestamp, liquidity index) tuples
+                liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback+1) # List of (token, timestamp, liquidity index) tuples
+                rates = self.liquidity_index_to_apy(liquidity_indexes) # Convert to APYs
                 if rates is not None and rates != []:
                     moving_average, moving_buffer = self.update_moving_average_and_buffer(rates=rates)
-                    
                     # Update the position using the momentum
                     position = "EXIT"
-                    if rates[-1][2] > moving_average + moving_buffer:
+                    if rates[-1] > moving_average + moving_buffer:
                         position = "LONG"
-                    if rates[-1][2] < moving_average - moving_buffer:
+                    if rates[-1] < moving_average - moving_buffer:
                         position = "SHORT"
                     
-                    signal = SignalEvent(rates[-1][0], position, rates[-1][1])
+                    signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
                     self.events.put(signal)
 
-                    
+    def liquidity_index_to_apy(self, rates):
+        liq_idx = np.array([r[2] for r in rates])
+        timestamps = np.array([r[1] for r in rates])
+        apys = []
+        for i in range(1, len(liq_idx)):
+            window = i-self.apy_lookback if self.apy_lookback<=i else 0
+            variable_rate = liq_idx[i]/liq_idx[window] - 1.0 
+            # Annualise the rate
+            compounding_periods = SECONDS_IN_YEAR / (timestamps[i] - timestamps[window]).total_seconds()
+            apys.append(((1 + variable_rate)**compounding_periods) - 1)
+        return np.array(apys)
+
     def update_moving_average_and_buffer(self, rates):
-        previous_rates = np.array([r[2] for r in rates[:-1]])
+        previous_rates = rates[:-1]
         moving_average = previous_rates.mean()
         moving_buffer = self.buffer * previous_rates.std()
         return moving_average, moving_buffer

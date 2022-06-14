@@ -22,7 +22,7 @@ class LongShortMomentumStrategyBacktest(Backtest):
     def __init__(self, start_date_time='2022-04-01 00:00:00',
                  end_date_time='2022-06-01 00:00:00',
                  leverage=1.0, initial_capital=1.0,
-                 lookback=30, buffer=1):
+                 trend_lookback=30, apy_lookback=1, buffer=1):
 
         self.events_queue = queue.Queue()
 
@@ -37,7 +37,8 @@ class LongShortMomentumStrategyBacktest(Backtest):
         self.strategy = LongShortMomentumStrategy(
             rates=self.dataHandler,
             events=self.events_queue,
-            lookback=lookback,
+            trend_lookback=trend_lookback,
+            apy_lookback=apy_lookback,
             buffer=buffer
         )
 
