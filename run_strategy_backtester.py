@@ -33,3 +33,9 @@ if __name__=="__main__":
     parser.add_argument("-i", "--initial_capital", type=float, help="Initial capital (notional before leverage)", default=1.0)
     parser.add_argument("-lb", "--lookback", type=float, help="Lookback window for momentum following (e.g. days)", default=30)
     parser.add_argument("-b", "--buffer", type=float, help="Buffer to apply to momentum spread in lookback window", default=1.0)
+
+    params = parser.parse_args()
+    param_dict = dict((k, v) for k, v in vars(params).items() if v is not None)
+    print(param_dict)
+    
+    main(**param_dict)
