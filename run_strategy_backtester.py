@@ -1,5 +1,6 @@
 from backtest import LongShortMomentumStrategyBacktest as LSM
 from reporter import SimpleBacktestReporter
+import os
 
 def main(start_date_time="2022-04-01 00:00:00", end_date_time="2022-06-01 00:00:00", leverage=1.0, \
             initial_capital=1.0, lookback=30, buffer=1.0):
@@ -19,6 +20,8 @@ def main(start_date_time="2022-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     stats = output_portfolio.output_summary_stats()
 
     # Use the Excel reporter to conveniently summarise all results of the backtest
+    if not os.path.exists("./reports"):
+        os.makedirs("./reports")
     reporter = SimpleBacktestReporter(backtest_results_df=output_portfolio.equity_curve, summary_stats=stats)
     reporter.generate_report(report_title=f"LongShortMomentum_lookback_{lookback}_buffer_{buffer}_leverage_{leverage}")
 
