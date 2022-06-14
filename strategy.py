@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from matplotlib.cbook import Stack
 import numpy as np
-import pandas as pd
 from event import SignalEvent
 
 
@@ -64,9 +63,9 @@ class LongShortMomentumStrategy(Strategy):
 
                     
     def update_moving_average_and_buffer(self, rates):
-        rates_df = pd.DataFrame(rates, columns=["Token", "Timestamp", "Liquidity index"])
-        moving_average = rates_df.iloc[:-1]["Liquidity index"].mean()
-        moving_buffer = self.buffer * rates_df.iloc[:-1]["Liquidity index"].std()
+        previous_rates = np.array([r[2] for r in rates[:-1]])
+        moving_average = previous_rates.mean()
+        moving_buffer = self.buffer * previous_rates.std()
         return moving_average, moving_buffer
     
 
