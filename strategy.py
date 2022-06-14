@@ -45,7 +45,7 @@ class LongShortMomentumStrategy(Strategy):
         self.buffer = buffer
 
     def calculate_signals(self, event):
-        if event.type == 'MARKET':
+        if event.type == "MARKET":
             for t in self.token_list:
                 rates = self.rates.get_latest_rates(t, N=self.lookback+1) # List of (token, timestamp, liquidity index) tuples
                 if rates is not None and rates != []:
