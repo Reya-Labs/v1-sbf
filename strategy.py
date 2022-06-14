@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
-
+from matplotlib.cbook import Stack
+import numpy as np
+import pandas as pd
 from event import SignalEvent
 
 
@@ -26,6 +28,47 @@ class Strategy(object):
         """
         raise NotImplementedError("Should implement calculate_signals()")
 
+class LongShortMomentumStrategy(Strategy):
+    """
+    A basic time series momentum (i.e. trend-following) strategy using a 
+    lookback window to compute the moving average of the rate. If current rate
+    if above the moving average + buffer, then go long (VT), else short (FT) if 
+    it's below moving average - buffer. In the +/- buffer region around the moving 
+    average we don't hold a position, and the exuction handler exits the trade.
+    """
+
+    def __init__(self, rates, events, lookback=30, buffer=1):
+        
+        self.rates = rates
+        self.token_list = self.rates.token_list
+        self.events = events
+        self.lookback = lookback
+        self.buffer = buffer
+
+    def calculate_signals(self, event):
+        if event.type == 'MARKET':
+            for t in self.token_list:
+                rates = self.rates.get_latest_rates(t, N=self.lookback+1) # List of (token, timestamp, liquidity index) tuples
+                if rates is not None and rates != []:
+                    moving_average, moving_buffer = self.update_moving_average_and_buffer(rates=rates)
+                    
+                    # Update the position using the momentum
+                    position = "EXIT"
+                    if rates[-1][2] > moving_average + moving_buffer:
+                        position = "LONG"
+                    if rates[-1][2] < moving_average - moving_buffer:
+                        position = "SHORT"
+                    
+                    signal = SignalEvent(rates[-1][0], position, rates[-1][1])
+                    self.events.put(signal)
+
+                    
+    def update_moving_average_and_buffer(self, rates):
+        rates_df = pd.DataFrame(rates, columns=["Token", "Timestamp", "Liquidity index"])
+        moving_average = rates_df.iloc[:-1]["Liquidity index"].mean()
+        moving_buffer = self.buffer * rates_df.iloc[:-1]["Liquidity index"].std()
+        return moving_average, moving_buffer
+    
 
 class LongRateStrategy(Strategy):
     """
