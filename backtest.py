@@ -22,7 +22,7 @@ class LongShortMomentumStrategyBacktest(Backtest):
     def __init__(self, start_date_time='2022-04-01 00:00:00',
                  end_date_time='2022-06-01 00:00:00',
                  leverage=1.0, initial_capital=1.0,
-                 trend_lookback=30, apy_lookback=1, buffer=1):
+                 trend_lookback=15, apy_lookback=1, buffer=1):
 
         self.events_queue = queue.Queue()
 

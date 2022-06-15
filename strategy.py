@@ -31,13 +31,17 @@ class Strategy(object):
 class LongShortMomentumStrategy(Strategy):
     """
     A basic time series momentum (i.e. trend-following) strategy using a 
-    lookback window to compute the moving average of the rate. If current rate
-    if above the moving average + buffer, then go long (VT), else short (FT) if 
-    it's below moving average - buffer. In the +/- buffer region around the moving 
-    average we don't hold a position, and the exuction handler exits the trade.
+    lookback window to compute the moving average of the rate. 
+    
+    Basic strategy as follows:
+
+    1) Convert liquidity indices to APYs
+    2) Compute the individual (log) relative change in APY at each timestamp: log(dAPY) ~ log(APY(t)/APY(t-1))
+    3) Computing moving average of this change over a lookback window, S = MA[log(dAPY)] from time t
+    4) S > buffer => SHORT; S < -buffer => LONG; else EXIT position with the execution handler  
     """
 
-    def __init__(self, rates, events, trend_lookback=30, apy_lookback=1, buffer=1):
+    def __init__(self, rates, events, trend_lookback=15, apy_lookback=1, buffer=1):
         
         self.rates = rates
         self.token_list = self.rates.token_list
@@ -51,13 +55,14 @@ class LongShortMomentumStrategy(Strategy):
             for t in self.token_list:
                 liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback+1) # List of (token, timestamp, liquidity index) tuples
                 rates = self.liquidity_index_to_apy(liquidity_indexes) # Convert to APYs
+                trends = self.calculate_trend(rates) # Get trends
                 if rates is not None and rates != []:
-                    moving_average, moving_buffer = self.update_moving_average_and_buffer(rates=rates)
+                    moving_average, moving_buffer = self.update_moving_average_and_buffer(trends=trends)
                     # Update the position using the momentum
                     position = "EXIT"
-                    if rates[-1] > moving_average + moving_buffer:
+                    if trends[-1] > moving_average + moving_buffer:
                         position = "LONG"
-                    if rates[-1] < moving_average - moving_buffer:
+                    if trends[-1] < moving_average - moving_buffer:
                         position = "SHORT"
                     
                     signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
@@ -75,10 +80,15 @@ class LongShortMomentumStrategy(Strategy):
             apys.append(((1 + variable_rate)**compounding_periods) - 1)
         return np.array(apys)
 
-    def update_moving_average_and_buffer(self, rates):
-        previous_rates = rates[:-1]
-        moving_average = previous_rates.mean()
-        moving_buffer = self.buffer * previous_rates.std()
+    @staticmethod
+    def calculate_trend(apys):
+        return np.array([np.log(apys[i]/apys[i-1]) for i in range(1, len(apys))])
+
+    def update_moving_average_and_buffer(self, trends):
+        trends = trends[~np.isnan(trends)] # Remove NaNs
+        moving_average = trends[:-1].mean() # Trend up to, but excluding, latest bar
+        moving_buffer = self.buffer * trends[:-1].std()
+        print(moving_average)
         return moving_average, moving_buffer
     
 

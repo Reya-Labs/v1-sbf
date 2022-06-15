@@ -3,7 +3,7 @@ from reporter import SimpleBacktestReporter
 import os
 
 def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:00", leverage=1.0, \
-            initial_capital=1.0, trend_lookback=30, apy_lookback=1, buffer=1.0):
+            initial_capital=1.0, trend_lookback=15, apy_lookback=1, buffer=1.0):
 
     momentum_backtest = LSM(start_date_time=start_date_time,
                  end_date_time=end_date_time,
@@ -38,7 +38,7 @@ if __name__=="__main__":
     parser.add_argument("-ed", "--end_date_time", type=str, help="Ending date for backtest", default="2022-06-01 00:00:00")
     parser.add_argument("-l", "--leverage", type=float, help="Leverage (notional / margin)", default=1.0)
     parser.add_argument("-i", "--initial_capital", type=float, help="Initial capital (notional before leverage)", default=1.0)
-    parser.add_argument("-tl", "--trend_lookback", type=int, help="Lookback window for momentum following (e.g. days)", default=30)
+    parser.add_argument("-tl", "--trend_lookback", type=int, help="Lookback window for momentum following (e.g. days)", default=15)
     parser.add_argument("-al", "--apy_lookback", type=int, help="Lookback window for converting liquidity index to APY", default=1)
     parser.add_argument("-b", "--buffer", type=float, help="Buffer to apply to momentum spread in lookback window", default=1.0)
 
