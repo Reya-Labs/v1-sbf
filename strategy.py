@@ -88,7 +88,6 @@ class LongShortMomentumStrategy(Strategy):
         trends = trends[~np.isnan(trends)] # Remove NaNs
         moving_average = trends[:-1].mean() # Trend up to, but excluding, latest bar
         moving_buffer = self.buffer * trends[:-1].std()
-        print(moving_average)
         return moving_average, moving_buffer
     
 
