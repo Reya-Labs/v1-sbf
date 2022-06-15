@@ -149,7 +149,6 @@ class HistoricCSVDataHandler(DataHandler):
                                           'liquidityIndex': "float64"
                                       }
                                   )
-
             # interpolate the liquidity index
             self.token_data[t] = self._interpolate_liquidity_index(
                 df=self.token_data[t]
