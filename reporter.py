@@ -91,9 +91,9 @@ class SimpleBacktestReporter(Reporter):
                                                         )
 
             # add line chart for the fixed rate (apy) of aave usdc
-
-            min_fixed_rate = self.backtest_results_df.loc[:, "fixedRate_aave_usdc"].min()
-            max_fixed_rate = self.backtest_results_df.loc[:, "fixedRate_aave_usdc"].max()
+            name = self.backtest_results_df.columns[3]
+            min_fixed_rate = self.backtest_results_df.loc[:, f"fixedRate_{name}"].min()
+            max_fixed_rate = self.backtest_results_df.loc[:, f"fixedRate_{name}"].max()
 
             self._plot_line_chart_against_date_in_excel(writer=writer, y_axis_min=min_fixed_rate, y_axis_max=max_fixed_rate,
                                                         sheet="backtest_results", y_series_col=6,

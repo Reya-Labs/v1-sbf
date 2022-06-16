@@ -72,14 +72,18 @@ class LongShortMomentumStrategyBacktest(Backtest):
     def __init__(self, start_date_time='2022-04-01 00:00:00',
                  end_date_time='2022-06-01 00:00:00',
                  leverage=1.0, initial_capital=1.0,
-                 trend_lookback=15, apy_lookback=1, buffer=1):
+                 trend_lookback=15, apy_lookback=1, buffer=1,
+                 trade_trend=False):
 
         self.events_queue = queue.Queue()
 
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
+            #token_list=["rocket_stETH"],
+            #token_list=["lido_stETH"],
             token_list=["aave_usdc"],
+            #token_list=["aave_dai"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -89,7 +93,8 @@ class LongShortMomentumStrategyBacktest(Backtest):
             events=self.events_queue,
             trend_lookback=trend_lookback,
             apy_lookback=apy_lookback,
-            buffer=buffer
+            buffer=buffer,
+            trade_trend=trade_trend
         )
 
         self.portfolio = NaivePortfolio(

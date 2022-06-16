@@ -1,4 +1,5 @@
 from backtest import LongShortMomentumStrategyBacktest as LSM
+from data import DataHandler
 from reporter import SimpleBacktestReporter
 import os
 import optuna
@@ -7,12 +8,13 @@ import json
 
 RUN_OPTUNA = False
 def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:00", leverage=1.0, \
-            initial_capital=1.0, trend_lookback=15, apy_lookback=1, buffer=1.0):
+            initial_capital=1.0, trend_lookback=15, apy_lookback=1, buffer=1.0, trade_trend=False):
 
     momentum_backtest = LSM(start_date_time=start_date_time,
                  end_date_time=end_date_time,
                  leverage=leverage, initial_capital=initial_capital,
-                 trend_lookback=trend_lookback, apy_lookback=apy_lookback, buffer=buffer)
+                 trend_lookback=trend_lookback, apy_lookback=apy_lookback, buffer=buffer,
+                 trade_trend=trade_trend)
 
     # Run the backtest and get the output portfolio object
     output_portfolio = momentum_backtest.run_backtest()
@@ -26,8 +28,12 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     # Use the Excel reporter to conveniently summarise all results of the backtest
     if not os.path.exists("./reports"):
         os.makedirs("./reports")
+    name = output_portfolio.equity_curve.columns[3]
     reporter = SimpleBacktestReporter(backtest_results_df=output_portfolio.equity_curve, summary_stats=stats)
-    reporter.generate_report(report_title=f"LongShortMomentum_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+    if trade_trend:
+        reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+    else:
+        reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
 
     print("Backtest summary:")
     print(stats)
@@ -59,6 +65,7 @@ def run_single(parser):
     parser.add_argument("-tl", "--trend_lookback", type=int, help="Lookback window for momentum following (e.g. days)", default=15)
     parser.add_argument("-al", "--apy_lookback", type=int, help="Lookback window for converting liquidity index to APY", default=1)
     parser.add_argument("-b", "--buffer", type=float, help="Buffer to apply to momentum spread in lookback window", default=1.0)
+    parser.add_argument("-t", "--trade_trend", action="store_true", help="Run simple trend-following strategy", default=False)
 
     params = parser.parse_args()
     param_dict = dict((k, v) for k, v in vars(params).items() if v is not None)
