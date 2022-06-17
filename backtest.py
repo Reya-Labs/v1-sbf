@@ -80,8 +80,8 @@ class LongShortMomentumStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            #token_list=["rocket_stETH"],
-            token_list=["lido_stETH"],
+            token_list=["rocket_stETH"],
+            #token_list=["lido_stETH"],
             #token_list=["aave_usdc"],
             #token_list=["aave_dai"],
             start_date_time=start_date_time,

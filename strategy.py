@@ -102,7 +102,7 @@ class LongShortMomentumStrategy(Strategy):
     1) Convert liquidity indices to APYs
     IF trade_trend set:
         2) Compute the individual (log) relative change in APY at each timestamp: log(dAPY) ~ log(APY(t)/APY(t-1))
-        3) Computing moving average of this change over a lookback window, S = MA[log(dAPY)] from time t
+        3) Computing moving average of this change over a lookback window, S = EWMA[log(dAPY)] from time t
         4) Current APY trend > S + buffer => LONG; current APY trend < S - buffer => LONG; else EXIT position with the execution handler  
     ELSE:
         2) We just form the same signals as above but with the APY value rather than its trend
@@ -117,26 +117,30 @@ class LongShortMomentumStrategy(Strategy):
         self.apy_lookback = apy_lookback
         self.buffer = buffer
         self.trade_trend = trade_trend
-
+        self.counter = 0
 
     def calculate_signals(self, event):
         if event.type == "MARKET":
             for t in self.token_list:
-                liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback+1) # List of (token, timestamp, liquidity index) tuples
+                liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback) # List of (token, timestamp, liquidity index) tuples
                 rates = self.liquidity_index_to_apy(liquidity_indexes) # Convert to APYs
                 trends = self.calculate_trend(rates) # Get trends
+                self.counter+=1
                 if rates is not None and rates != []:
                     if self.trade_trend:
-                        moving_average, moving_buffer = self.update_moving_average_and_buffer(series=trends)# --> Need to think harder about tend following
+                        moving_average, moving_buffer = self.update_moving_average_and_buffer(series=trends, alpha=0.80)# --> Rolling trends
                     else:
-                        moving_average, moving_buffer = self.update_moving_average_and_buffer(series=rates) # ---> Simple "rolling rates" strategy
+                        moving_average, moving_buffer = self.update_moving_average_and_buffer(series=rates, alpha=0.80) # ---> Rolling rates
                     # Update the position using the momentum
                     position = "EXIT"
                     current = trends[-1] if self.trade_trend else rates[-1]
                     if current > moving_average + moving_buffer:
-                        position = "LONG"
+                        position = "LONG" if self.trade_trend else "SHORT"
                     if current < moving_average - moving_buffer:
-                        position = "SHORT"
+                        position = "SHORT" if self.trade_trend else "LONG"
+                    
+                    if self.counter < 70:
+                        print(moving_average, " +/- ", moving_buffer, " --> ", position)
                     
                     signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
                     self.events.put(signal)
