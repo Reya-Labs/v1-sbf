@@ -25,15 +25,18 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     # Collect the summary statistics: Sharpe ratio and maximum drawdown
     stats = output_portfolio.output_summary_stats()
 
+
     # Use the Excel reporter to conveniently summarise all results of the backtest
     if not os.path.exists("./reports"):
         os.makedirs("./reports")
     name = output_portfolio.equity_curve.columns[3]
     reporter = SimpleBacktestReporter(backtest_results_df=output_portfolio.equity_curve, summary_stats=stats)
     if trade_trend:
-        reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+        #reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+        output_portfolio.equity_curve.to_csv(f"./reports/testing/df_LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     else:
-        reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+        #reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+        output_portfolio.equity_curve.to_csv(f"./reports/testing/df_LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
 
     print("Backtest summary:")
     print(stats)
