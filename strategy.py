@@ -150,7 +150,6 @@ class LongShortMomentumStrategy(Strategy):
                     signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
                     self.events.put(signal)
 
-
     def liquidity_index_to_apy(self, rates):
         liq_idx = np.array([r[2] for r in rates])
         timestamps = np.array([r[1] for r in rates])

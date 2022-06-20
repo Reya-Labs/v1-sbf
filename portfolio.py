@@ -3,6 +3,7 @@ import pandas as pd
 from abc import ABCMeta, abstractmethod
 from performance import PerformanceMetricsCalculator
 from event import OrderEvent
+from strategy import SECONDS_IN_YEAR
 
 
 class Portfolio(object):
@@ -318,7 +319,10 @@ class NaivePortfolio(Portfolio):
         Creates a list of summary statistics for the portfolio such
         as Sharpe Ratio and drawdown information.
         """
-        total_return = self.equity_curve['equity_curve'][-1]
+        # Estimate trading fee
+        delta_t = (self.equity_curve.index[-1]-self.equity_curve.index[0]).total_seconds() / SECONDS_IN_YEAR
+        trading_fee = self.initial_capital * delta_t * 0.003 # Assuming 0.003 gamma fee for now, and 0 lambda fee
+        total_return = self.equity_curve['equity_curve'][-1] - trading_fee
         returns = self.equity_curve['returns']
         pnl = self.equity_curve['equity_curve']
 
