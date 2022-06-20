@@ -11,6 +11,8 @@ import statsmodels.api as sm
 from statsmodels.regression.linear_model import OLS
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.stattools import coint
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import RANSACRegressor
 
 SECONDS_IN_YEAR = 31536000
 
@@ -117,7 +119,6 @@ class LongShortMomentumStrategy(Strategy):
         self.apy_lookback = apy_lookback
         self.buffer = buffer
         self.trade_trend = trade_trend
-        self.counter = 0
 
     def calculate_signals(self, event):
         if event.type == "MARKET":
@@ -125,22 +126,26 @@ class LongShortMomentumStrategy(Strategy):
                 liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback) # List of (token, timestamp, liquidity index) tuples
                 rates = self.liquidity_index_to_apy(liquidity_indexes) # Convert to APYs
                 trends = self.calculate_trend(rates) # Get trends
-                self.counter+=1
                 if rates is not None and rates != []:
                     if self.trade_trend:
-                        moving_average, moving_buffer = self.update_moving_average_and_buffer(series=trends, alpha=0.80)# --> Rolling trends
+                        #moving_average, moving_buffer = self.update_moving_average_and_buffer(series=trends, alpha=0.80)# --> Rolling trends
+                        sig, buffer = self.update_beta(series=rates)
                     else:
-                        moving_average, moving_buffer = self.update_moving_average_and_buffer(series=rates, alpha=0.80) # ---> Rolling rates
+                        sig, buffer = self.update_moving_average_and_buffer(series=rates, alpha=0.80) # ---> Rolling rates
                     # Update the position using the momentum
                     position = "EXIT"
-                    current = trends[-1] if self.trade_trend else rates[-1]
-                    if current > moving_average + moving_buffer:
-                        position = "LONG" if self.trade_trend else "SHORT"
-                    if current < moving_average - moving_buffer:
-                        position = "SHORT" if self.trade_trend else "LONG"
-                    
-                    if self.counter < 70:
-                        print(moving_average, " +/- ", moving_buffer, " --> ", position)
+                    if self.trade_trend:
+                        # Test the beta trading
+                        position = "EXIT"
+                        if sig > buffer:
+                            position = "LONG"
+                        if sig < -buffer:
+                            position = "SHORT"
+                    else:
+                        if rates[-1] > sig + buffer:
+                            position = "SHORT"
+                        if rates[-1] < sig - buffer:
+                            position = "LONG"
                     
                     signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
                     self.events.put(signal)
@@ -162,6 +167,13 @@ class LongShortMomentumStrategy(Strategy):
     def calculate_trend(apys):
         return np.array([np.log(apys[i]/apys[i-1]) for i in range(1, len(apys))])
 
+    @staticmethod
+    def update_beta(series):
+        time_steps = np.arange(len(series)).reshape(-1,1)
+        #reg = LinearRegression().fit(time_steps, series.reshape(-1,1))
+        reg = RANSACRegressor(random_state=42).fit(time_steps, series.reshape(-1,1))
+        beta = reg.estimator_.coef_.flatten()[0]
+        return beta, 1e-5
 
     """
     Calculates the exponential moving average over a vector.
