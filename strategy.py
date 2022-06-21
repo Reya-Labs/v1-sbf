@@ -110,7 +110,7 @@ class LongShortMomentumStrategy(Strategy):
         2) We just form the same signals as above but with the APY value rather than its trend
     """
 
-    def __init__(self, rates, events, trend_lookback=15, apy_lookback=1, buffer=1, trade_trend=False):
+    def __init__(self, rates, events, trend_lookback=15, apy_lookback=5, buffer=1, trade_trend=False):
         
         self.rates = rates
         self.token_list = self.rates.token_list
@@ -153,6 +153,15 @@ class LongShortMomentumStrategy(Strategy):
                             self.events.put(signal_exit)
                     
                     if position != self.prior_position:
+                        # When changing from a net LONG/SHORT to a net SHORT/LONG we first have to net
+                        # out the current position
+                        if self.prior_position=="LONG": # --> Net out current VT
+                            signal_net_out = SignalEvent(liquidity_indexes[-1][0], "SHORT", liquidity_indexes[-1][1])
+                            self.events.put(signal_net_out)
+                        if self.prior_position=="SHORT": # --> Net out curent FT
+                            signal_net_out = SignalEvent(liquidity_indexes[-1][0], "LONG", liquidity_indexes[-1][1])
+                            self.events.put(signal_net_out)
+
                         signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
                         self.events.put(signal)
                         # Update new prior position to prevent N-counting of the same LONG, SHORT position

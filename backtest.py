@@ -72,7 +72,7 @@ class LongShortMomentumStrategyBacktest(Backtest):
     def __init__(self, start_date_time='2022-04-01 00:00:00',
                  end_date_time='2022-06-01 00:00:00',
                  leverage=1.0, initial_capital=1.0,
-                 trend_lookback=15, apy_lookback=1, buffer=1,
+                 trend_lookback=15, apy_lookback=5, buffer=1,
                  trade_trend=False):
 
         self.events_queue = queue.Queue()
@@ -80,7 +80,7 @@ class LongShortMomentumStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=["rocket_stETH"],
+            token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
             #token_list=["lido_stETH"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
