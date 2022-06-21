@@ -119,8 +119,10 @@ class LongShortMomentumStrategy(Strategy):
         self.apy_lookback = apy_lookback
         self.buffer = buffer
         self.trade_trend = trade_trend
+        self.prior_position = "NONE" # Need to track when positions change
 
     def calculate_signals(self, event):
+        position = self.prior_position # Reset position so that something is always registered at the start of a new event
         if event.type == "MARKET":
             for t in self.token_list:
                 liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback) # List of (token, timestamp, liquidity index) tuples
@@ -128,27 +130,33 @@ class LongShortMomentumStrategy(Strategy):
                 trends = self.calculate_trend(rates) # Get trends
                 if rates is not None and rates != []:
                     if self.trade_trend:
-                        #moving_average, moving_buffer = self.update_moving_average_and_buffer(series=trends, alpha=0.80)# --> Rolling trends
-                        sig, buffer = self.update_beta(series=rates)
+                        sig, buffer = self.update_beta(series=rates) # ---> Rolling trends
                     else:
                         sig, buffer = self.update_moving_average_and_buffer(series=rates, alpha=0.80) # ---> Rolling rates
-                    # Update the position using the momentum
-                    position = "EXIT"
-                    if self.trade_trend:
-                        # Test the beta trading
-                        position = "EXIT"
+                    
+                    # Now trade trend or trade rate
+                    if self.trade_trend: 
                         if sig > buffer:
                             position = "LONG"
-                        if sig < -buffer:
+                        elif sig < -buffer:
                             position = "SHORT"
-                    else:
+                        else:
+                            signal_exit = SignalEvent(liquidity_indexes[-1][0], "EXIT", liquidity_indexes[-1][1])
+                            self.events.put(signal_exit)
+                    else: 
                         if rates[-1] > sig + buffer:
                             position = "SHORT"
-                        if rates[-1] < sig - buffer:
+                        elif rates[-1] < sig - buffer:
                             position = "LONG"
+                        else:
+                            signal_exit = SignalEvent(liquidity_indexes[-1][0], "EXIT", liquidity_indexes[-1][1])
+                            self.events.put(signal_exit)
                     
-                    signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
-                    self.events.put(signal)
+                    if position != self.prior_position:
+                        signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
+                        self.events.put(signal)
+                        # Update new prior position to prevent N-counting of the same LONG, SHORT position
+                        self.prior_position = position
 
     def liquidity_index_to_apy(self, rates):
         liq_idx = np.array([r[2] for r in rates])
