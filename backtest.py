@@ -5,6 +5,8 @@ from data import HistoricCSVDataHandler
 from strategy import LongRateStrategy, LongShortMomentumStrategy, StatisticalArbitragePairs
 from execution import SimulatedExecutionHandler
 from portfolio import NaivePortfolio
+import datetime
+import pandas as pd
 
 # todo: add docs
 
@@ -129,26 +131,33 @@ class StatisticalArbitragePairsBacktest(Backtest):
     def __init__(self, start_date_time="2022-04-01 00:00:00",
                  end_date_time="2022-06-01 00:00:00",
                  leverage=1.0, initial_capital=1.0,
-                 lookback_window=30, apy_lookback=1, deviations=1,
+                 lookback_window=30, apy_lookback=5, deviations=1,
                  pairs = [("aave_usdc", "aave_dai")]):
 
         self.events_queue = queue.Queue()
 
+        # We need to play around with datetime, and make sure that the stat arb lookback
+        # window is still being picked up 
+        read_date = datetime.datetime.strptime(start_date_time, "%Y-%m-%d 00:00:00")
+        get_lookback = read_date - datetime.timedelta(days=lookback_window)
+        formatted_start_date = get_lookback.strftime("%Y-%m-%d 00:00:00")
+
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=["aave_usdc", "aave_dai"], # aUSDC - aDAI arbitrage 
-            start_date_time=start_date_time,
+            token_list=list(pairs[0]), # aUSDC - aDAI arbitrage 
+            start_date_time=formatted_start_date,
             end_date_time=end_date_time
         )
-
+        
         self.strategy = StatisticalArbitragePairs(
             rates=self.dataHandler,
             events=self.events_queue,
             lookback_window=lookback_window,
             apy_lookback=apy_lookback,
             deviations=deviations,
-            pairs=pairs
+            pairs=pairs,
+            strategy_start=start_date_time # True start of the analysis, so we can collect lookback window data first
         )
 
         self.portfolio = NaivePortfolio(

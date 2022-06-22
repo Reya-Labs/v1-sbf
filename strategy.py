@@ -4,6 +4,7 @@ from matplotlib.cbook import Stack
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from sqlalchemy import column
 from event import SignalEvent
 import pandas as pd
 import os
@@ -268,7 +269,7 @@ class LongShortMomentumStrategy(Strategy):
 
 class StatisticalArbitragePairs(Strategy):
 
-    def __init__(self, rates, events, pairs, lookback_window=30, apy_lookback=1, deviations=1.0):
+    def __init__(self, rates, events, pairs, lookback_window=30, apy_lookback=5, deviations=1.0, strategy_start="2022-04-01 00:00:00"):
         
         self.rates = rates
         self.token_list = self.rates.token_list
@@ -277,6 +278,8 @@ class StatisticalArbitragePairs(Strategy):
         self.apy_lookback = apy_lookback
         self.deviations = deviations # How much to scale the standard deviation of the pairs ratio by
         self.pairs = pairs # The token pairs to arbitrage --> [(token1, token2), (token2, token4), (token1, token4), ...]
+        self.prior_position = "EXIT" # Tracker for the first stat arb position
+        self.strategy_start = pd.to_datetime(strategy_start)
 
     """
         Compute z-score for downstream stat. arb. signal
@@ -301,6 +304,7 @@ class StatisticalArbitragePairs(Strategy):
             compounding_periods = SECONDS_IN_YEAR / (timestamps[i] - timestamps[window]).total_seconds()
             apys.append(((1 + variable_rate)**compounding_periods) - 1)
         df = pd.DataFrame(data={"Date": timestamps[1:], f"{token} APY": np.array(apys)})
+        df.set_index("Date", inplace=True)
         return df
     
     """
@@ -309,69 +313,116 @@ class StatisticalArbitragePairs(Strategy):
         over in the trading engine.
     """
     def calculate_signals(self, event):
+        position_tracker = self.prior_position # Keep track of the first position to prevent double counting 
         if event.type == "MARKET":
             for pair in self.pairs:
-                liq_idx_1 = self.rates.get_latest_rates(pair[0], N=self.lookback_window) 
-                liq_idx_2 = self.rates.get_latest_rates(pair[1], N=self.lookback_window) 
-                df_1, df_2 = self.liquidity_index_to_apy_df(rates=liq_idx_1, token=pair[0]), \
-                    self.liquidity_index_to_apy_df(rates=liq_idx_2, token=pair[1])
+                liq_idx_1 = self.rates.get_latest_rates(pair[0], N=self.lookback_window+1) 
+                liq_idx_2 = self.rates.get_latest_rates(pair[1], N=self.lookback_window+1) 
+                if liq_idx_1[-1][1] >= self.strategy_start: # Enter strategy
+                    
+                    df_1, df_2 = self.liquidity_index_to_apy_df(rates=liq_idx_1, token=pair[0]), \
+                        self.liquidity_index_to_apy_df(rates=liq_idx_2, token=pair[1])
+                    
+                    # Make sure the pairs share common timestamps, by concatenating
+                    signals = pd.concat([df_1, df_2], join="inner", axis=1)
+                    signals.dropna(inplace=True)
+
+                    # Signal construction and analysis
+                    signals["Ratios"] = signals[f"{pair[0]} APY"]/signals[f"{pair[1]} APY"]
+
+                    # Currently using previous month's information, but this might be updated to a more "rolling"
+                    # arbitrage strategy
+                    #signals["Year"] = np.array([int("-".join(i.split(" ")[0].split("-")[:1])) for i in signals.index])
+                    #signals["Month"] = np.array([int("-".join(i.split(" ")[0].split("-")[1:2])) for i in signals.index])
+
+                    # Calculate z-score and define upper and lower thresholds (e.g. 1 standard deviation)
+                    # Possilve updates: include two-weeks rebalancing, relevant for the initially proposed strategy 
+                    # Originally we were arbitraging only based on the previous month's information, but let's actually
+                    # implement a rolling window
+                    """
+                    signals_collected = []
+                    for y in signals["Year"].unique(): 
+                        for m in signals["Month"].unique():
+                           (y_prev, m_prev) = (y-1, 12) if m==1 else (y, m-1)
+                           signals_prev = signals.loc[lambda signals: (signals["Year"]== y_prev) & (signals["Month"]==m_prev)]
+                           signals_temp = signals.loc[lambda signals: (signals["Year"]== y) & (signals["Month"]==m)]
+                           signals_temp["Z"] = self.z_score(signals_prev["Ratios"])
+                           signals_temp["Z upper limit"] = signals_temp["Z"].mean() + signals_temp["Z"].std()*self.deviations
+                           signals_temp["Z lower limit"] = signals_temp["Z"].mean() - signals_temp["Z"].std()*self.deviations
+        
+                           signals_collected.append(signals_temp)
+                    del signals
+                    """
                 
-                # Make sure the pairs share common timestamps, by concatenating
-                signals = pd.concat([df_1, df_2], join="inner")
-                signals.dropna(inplace=True)
-                signals.set_index("Date", inplace=True)
+                    # Use lookback_window
+                    # We need to confirm the signals are still cointegrating over the lookback window
+                    coint_check = coint(signals[f"{pair[0]} APY"], signals[f"{pair[1]} APY"])
+                    if coint_check[1] >= 0.05:
+                        # Pairs are not cointegrated, and we need to exit existing trades and reset with EXIT
+                        if position_tracker=="LONG":
+                            signal1_exit = SignalEvent(liq_idx_1[-1][0], "SHORT", liq_idx_1[-1][1])
+                            signal2_exit = SignalEvent(liq_idx_2[-1][0], "LONG", liq_idx_2[-1][1])
+                            self.events.put(signal1_exit)
+                            self.events.put(signal2_exit)
+                        if position_tracker=="SHORT":
+                            signal1_exit = SignalEvent(liq_idx_1[-1][0], "LONG", liq_idx_1[-1][1])
+                            signal2_exit = SignalEvent(liq_idx_2[-1][0], "SHORT", liq_idx_2[-1][1])
+                            self.events.put(signal1_exit)
+                            self.events.put(signal2_exit)
 
-                # Signal construction and analysis
-                signals["Ratios"] = signals[f"{pair[0]} APY"]/signals[f"{pair[1]} APY"]
+                        signal1 = SignalEvent(liq_idx_1[-1][0], "EXIT", liq_idx_1[-1][1])
+                        signal2 = SignalEvent(liq_idx_2[-1][0], "EXIT", liq_idx_2[-1][1])
+                    
+                        # Exit first pair trade
+                        self.events.put(signal1)
 
-                # Currently using previous month's information, but this might be updated to a more "rolling"
-                # arbitrage strategy
-                signals["Year"] = np.array([int("-".join(i.split(" ")[0].split("-")[:1])) for i in signals.index])
-                signals["Month"] = np.array([int("-".join(i.split(" ")[0].split("-")[1:2])) for i in signals.index])
+                        # Exit second pair trade
+                        self.events.put(signal2)
 
-                # Calculate z-score and define upper and lower thresholds (e.g. 1 standard deviation)
-                # Possilve updates: include two-weeks rebalancing, relevant for the initially proposed strategy 
-                # For now we don't have a rolling window, but arbitrage only based on the previous month's information
-                signals_collected = []
-                for y in signals["Year"].unique(): 
-                    for m in signals["Month"].unique():
-                        (y_prev, m_prev) = (y-1, 12) if m==1 else (y, m-1)
-                        signals_prev = signals.loc[lambda signals: (signals["Year"]== y_prev) & (signals["Month"]==m_prev)]
-                        signals_temp = signals.loc[lambda signals: (signals["Year"]== y) & (signals["Month"]==m)]
-                        signals_temp["Z"] = self.z_score(signals_prev["Ratios"])
-                        signals_temp["Z upper limit"] = signals_temp["Z"].mean() + signals_temp["Z"].std()*self.deviations
-                        signals_temp["Z lower limit"] = signals_temp["Z"].mean() - signals_temp["Z"].std()*self.deviations
+                        # Reset 
+                        self.prior_position = "EXIT"
+
+                    else: # The pairs are actually cointegrated
+                        print("COINTEGRATED")
+                        signals["Z"] = self.z_score(signals["Ratios"])
+                        signals["Z upper limit"] = signals["Z"].mean() + signals["Z"].std()*self.deviations
+                        signals["Z lower limit"] = signals["Z"].mean() - signals["Z"].std()*self.deviations
+
+                        # Make complete set of signals
+                        #signals_all = pd.concat(signals_collected)
         
-                        signals_collected.append(signals_temp)
-                del signals
+                        # Create signal - short if Z-score is greater than upper limit else long
+                        signals["Signals 1"] = 0
+                        signals["Signals 1"] = np.select([signals["Z"] > \
+                                         signals["Z upper limit"], signals["Z"] < signals["Z lower limit"]], [-1, 1], default=0)
                 
-                # Make complete set of signals
-                signals_all = pd.concat(signals_collected)
+                        # We take the first order difference to obtain the execution signal
+                        # at the given timestamp
+                        signals["Positions 1"] = signals["Signals 1"].diff()
         
-                # Create signal - short if Z-score is greater than upper limit else long
-                signals_all["Signals 1"] = 0
-                signals_all["Signals 1"] = np.select([signals_all["Z"] > \
-                                 signals_all["Z upper limit"], signals_all["Z"] < signals_all["Z lower limit"]], [-1, 1], default=0)
-                # We take the first order difference to obtain portfolio position in that given coin
-                signals_all["Positions 1"] = signals_all["Signals 1"].diff()
-        
-                # Repeat for the second coin signal
-                signals_all["Signals 2"] = -signals_all["Signals 1"]
-                signals_all["Positions 2"] = signals_all["Signals 2"].diff()
+                        # Repeat for the second token signal, going bear/bull if initial token is bull/bear
+                        signals["Signals 2"] = -signals["Signals 1"]
+                        signals["Positions 2"] = signals["Signals 2"].diff()
 
-                # Send the different positions to the execution handler
-                # Just need to use replace to get LONG, SHORT, EXIT
-                # Then send to execution handler    
-                signals_all.replace(
-                                {
-                                    "Positions 1": {1: "LONG", -1: "SHORT", 0: "EXIT"},
-                                    "Positions 2": {1: "LONG", -1: "SHORT", 0: "EXIT"},
-                                }
-                )
-                signal1 = SignalEvent(liq_idx_1[-1][0], signals_all["Positions 1"].iloc[-1], liq_idx_1[-1][1])
-                signal2 = SignalEvent(liq_idx_2[-1][0], signals_all["Positions 2"].iloc[-1], liq_idx_2[-1][1])
-                self.events.put(signal1)
-                self.events.put(signal2)
+                        # Send the different positions to the execution handler
+                        # Just need to use replace to get LONG, SHORT, EXIT
+                        # Then send to the execution handler    
+                        signals.replace(
+                                        {
+                                            "Positions 1": {1: "LONG", -1: "SHORT", 0: "EXIT"},
+                                            "Positions 2": {1: "LONG", -1: "SHORT", 0: "EXIT"},
+                                        }
+                        )
+                        position_tracker = signals["Positions 1"].iloc[-1]
+
+                        if position_tracker != self.prior_position: # To ensure we only go LONG/SHOT once, until the signal changes 
+                            # Now we need to set up the positions 
+                            signal1 = SignalEvent(liq_idx_1[-1][0], signals["Positions 1"].iloc[-1], liq_idx_1[-1][1])
+                            signal2 = SignalEvent(liq_idx_2[-1][0], signals["Positions 2"].iloc[-1], liq_idx_2[-1][1])
+                            self.events.put(signal1)
+                            self.events.put(signal2)
+
+                            self.prior_position = position_tracker # Reset the prior position to LONG/SHORT
 
     """
         Compute the fortnights for bi-monthly rebalancing
@@ -416,7 +467,8 @@ class StatisticalArbitragePairs(Strategy):
         plt.close()
 
     """
-    Pairwise conintegration tests on an APY DataFrame
+    Pairwise conintegration tests on an APY DataFrame. This can also be called to continuously check
+    that the pairs remain cointegrated before making the stat arb trade 
     """
     @staticmethod
     def find_cointegrated_pairs(df):

@@ -1,4 +1,5 @@
 from backtest import LongShortMomentumStrategyBacktest as LSM
+from backtest import StatisticalArbitragePairsBacktest as SAP
 from data import DataHandler
 from reporter import SimpleBacktestReporter
 import os
@@ -8,16 +9,21 @@ import json
 
 RUN_OPTUNA = False
 def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:00", leverage=1.0, \
-            initial_capital=1.0, trend_lookback=15, apy_lookback=5, buffer=1.0, trade_trend=False):
+            initial_capital=1.0, trend_lookback=15, apy_lookback=5, buffer=1.0, trade_trend=False,
+            trade_stat_arb=False, deviations=1.0, lookback_window=30):
 
-    momentum_backtest = LSM(start_date_time=start_date_time,
+    backtest = LSM(start_date_time=start_date_time,
                  end_date_time=end_date_time,
                  leverage=leverage, initial_capital=initial_capital,
                  trend_lookback=trend_lookback, apy_lookback=apy_lookback, buffer=buffer,
                  trade_trend=trade_trend)
+    if trade_stat_arb:
+        backtest = SAP(start_date_time=start_date_time, end_date_time=end_date_time, leverage=leverage,\
+                       initial_capital=initial_capital, lookback_window=lookback_window, \
+                       apy_lookback=apy_lookback, deviations=deviations)
 
     # Run the backtest and get the output portfolio object
-    output_portfolio = momentum_backtest.run_backtest()
+    output_portfolio = backtest.run_backtest()
 
     # Extract the equity curve for computing performance metics
     output_portfolio.create_equity_curve_dataframe()
@@ -31,12 +37,14 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     if not os.path.exists(f"./reports/{end}"):
         os.makedirs(f"./reports/{end}")
     name = output_portfolio.equity_curve.columns[3]
-    reporter = SimpleBacktestReporter(backtest_results_df=output_portfolio.equity_curve, summary_stats=stats)
+    #reporter = SimpleBacktestReporter(backtest_results_df=output_portfolio.equity_curve, summary_stats=stats)
     if trade_trend:
-        reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+        #reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_TREND_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
+    elif trade_stat_arb:
+        output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
     else:
-        reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
+        #reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_RATE_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
 
     print("Backtest summary:")
@@ -67,9 +75,12 @@ def run_single(parser):
     parser.add_argument("-l", "--leverage", type=float, help="Leverage (notional / margin)", default=1.0)
     parser.add_argument("-i", "--initial_capital", type=float, help="Initial capital (notional before leverage)", default=1.0)
     parser.add_argument("-tl", "--trend_lookback", type=int, help="Lookback window for momentum following (e.g. days)", default=15)
+    parser.add_argument("-lw", "--lookback_window", type=int, help="Lookback window for statistical arbitrage", default=30)
     parser.add_argument("-al", "--apy_lookback", type=int, help="Lookback window for converting liquidity index to APY", default=5)
     parser.add_argument("-b", "--buffer", type=float, help="Buffer to apply to momentum spread in lookback window", default=1.0)
+    parser.add_argument("-d", "--deviations", type=float, help="Buffer to apply to stat arb signal", default=1.0)
     parser.add_argument("-t", "--trade_trend", action="store_true", help="Run simple trend-following strategy", default=False)
+    parser.add_argument("-sa", "--trade_stat_arb", action="store_true", help="Run the statistical arbitrage pairs trade", default=False)
 
     params = parser.parse_args()
     param_dict = dict((k, v) for k, v in vars(params).items() if v is not None)
