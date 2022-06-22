@@ -13,7 +13,6 @@ import statsmodels.api as sm
 from statsmodels.regression.linear_model import OLS
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.stattools import coint
-from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RANSACRegressor
 
 SECONDS_IN_YEAR = 31536000

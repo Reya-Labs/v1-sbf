@@ -1,3 +1,4 @@
+from calendar import month
 from backtest import LongShortMomentumStrategyBacktest as LSM
 from backtest import StatisticalArbitragePairsBacktest as SAP
 from backtest import LongRateStrategyBacktest as LR
@@ -46,7 +47,10 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
         #reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_TREND_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     elif trade_stat_arb:
-        output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
+        if monthly:
+            output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_Monthly_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
+        else:
+            output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_Rolling_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
     elif long_rate:
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongOnly_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     else:
