@@ -1,3 +1,5 @@
+from calendar import month
+from tkinter import W
 from event_loop import EventLoop
 import queue
 from abc import ABCMeta, abstractmethod
@@ -30,7 +32,7 @@ class LongRateStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=["aave_usdc"],
+            token_list=["rocket_rETH", "lido_stETH"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -82,8 +84,9 @@ class LongShortMomentumStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
-            #token_list=["lido_stETH"],
+            #token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
+            token_list=["lido_stETH"],
+            #token_list=["aave_usdc"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -132,7 +135,11 @@ class StatisticalArbitragePairsBacktest(Backtest):
                  end_date_time="2022-06-01 00:00:00",
                  leverage=1.0, initial_capital=1.0,
                  lookback_window=30, apy_lookback=5, deviations=1,
-                 pairs = [("aave_usdc", "aave_dai")]):
+                 #pairs = [("aave_usdc", "aave_dai")], # --> No luck here
+                 #pairs = [("compound_usdc", "compound_dai")], # --> monthly works, moderate drawdown --> gone by June, don't use
+                 pairs = [("rocket_rETH", "lido_stETH")], # --> monthly works, low drawdown --> survives to June tests
+                 #pairs = [("aave_usdc", "compound_dai")], # --> monthly works, drawdown a bit large --> gone by June, don't use
+                 monthly=False):
 
         self.events_queue = queue.Queue()
 
@@ -157,7 +164,8 @@ class StatisticalArbitragePairsBacktest(Backtest):
             apy_lookback=apy_lookback,
             deviations=deviations,
             pairs=pairs,
-            strategy_start=start_date_time # True start of the analysis, so we can collect lookback window data first
+            strategy_start=start_date_time, # True start of the analysis, so we can collect lookback window data first
+            monthly=monthly
         )
 
         self.portfolio = NaivePortfolio(

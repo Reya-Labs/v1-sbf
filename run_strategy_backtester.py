@@ -1,5 +1,6 @@
 from backtest import LongShortMomentumStrategyBacktest as LSM
 from backtest import StatisticalArbitragePairsBacktest as SAP
+from backtest import LongRateStrategyBacktest as LR
 from data import DataHandler
 from reporter import SimpleBacktestReporter
 import os
@@ -10,7 +11,7 @@ import json
 RUN_OPTUNA = False
 def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:00", leverage=1.0, \
             initial_capital=1.0, trend_lookback=15, apy_lookback=5, buffer=1.0, trade_trend=False,
-            trade_stat_arb=False, deviations=1.0, lookback_window=30):
+            trade_stat_arb=False, deviations=1.0, lookback_window=30, monthly=False, long_rate=False):
 
     backtest = LSM(start_date_time=start_date_time,
                  end_date_time=end_date_time,
@@ -20,7 +21,11 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     if trade_stat_arb:
         backtest = SAP(start_date_time=start_date_time, end_date_time=end_date_time, leverage=leverage,\
                        initial_capital=initial_capital, lookback_window=lookback_window, \
-                       apy_lookback=apy_lookback, deviations=deviations)
+                       apy_lookback=apy_lookback, deviations=deviations, monthly=monthly)
+
+    if long_rate:
+        backtest = LR(start_date_time=start_date_time,end_date_time=end_date_time,\
+            leverage=leverage, initial_capital=initial_capital)
 
     # Run the backtest and get the output portfolio object
     output_portfolio = backtest.run_backtest()
@@ -30,7 +35,6 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
 
     # Collect the summary statistics: Sharpe ratio and maximum drawdown
     stats = output_portfolio.output_summary_stats()
-
 
     # Use the Excel reporter to conveniently summarise all results of the backtest
     end = end_date_time.split(" ")[0]
@@ -43,6 +47,8 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_TREND_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     elif trade_stat_arb:
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
+    elif long_rate:
+        output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongOnly_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     else:
         #reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_RATE_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
@@ -81,6 +87,8 @@ def run_single(parser):
     parser.add_argument("-d", "--deviations", type=float, help="Buffer to apply to stat arb signal", default=1.0)
     parser.add_argument("-t", "--trade_trend", action="store_true", help="Run simple trend-following strategy", default=False)
     parser.add_argument("-sa", "--trade_stat_arb", action="store_true", help="Run the statistical arbitrage pairs trade", default=False)
+    parser.add_argument("-m", "--monthly", action="store_true", help="Run the statistical arbitrage pairs trade under a monthly strategy", default=False)
+    parser.add_argument("-lr", "--long_rate", action="store_true", help="VT hold i.e. long rate strategy only", default=False)
 
     params = parser.parse_args()
     param_dict = dict((k, v) for k, v in vars(params).items() if v is not None)
