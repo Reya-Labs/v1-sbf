@@ -127,7 +127,7 @@ class LongShortMomentumStrategy(Strategy):
             for t in self.token_list:
                 liquidity_indexes = self.rates.get_latest_rates(t, N=self.trend_lookback) # List of (token, timestamp, liquidity index) tuples
                 rates = self.liquidity_index_to_apy(liquidity_indexes) # Convert to APYs
-                trends = self.calculate_trend(rates) # Get trends
+                #trends = self.calculate_trend(rates) # Get trends
                 if rates is not None and rates != []:
                     if self.trade_trend:
                         sig, buffer = self.update_beta(series=rates) # ---> Rolling trends
