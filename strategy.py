@@ -357,7 +357,7 @@ class StatisticalArbitragePairs(Strategy):
                     # Use lookback_window
                     # We need to confirm the signals are still cointegrating over the lookback window
                     coint_check = coint(signals[f"{pair[0]} APY"], signals[f"{pair[1]} APY"])
-                    if coint_check[1] >= 0.05:
+                    if coint_check[1] >= 0.05: # Need to think more about this approac. Might be too conservative.
                         # Pairs are not cointegrated, and we need to exit existing trades and reset with EXIT
                         if position_tracker=="LONG":
                             signal1_exit = SignalEvent(liq_idx_1[-1][0], "SHORT", liq_idx_1[-1][1])
@@ -368,8 +368,8 @@ class StatisticalArbitragePairs(Strategy):
                             signal1_exit = SignalEvent(liq_idx_1[-1][0], "LONG", liq_idx_1[-1][1])
                             signal2_exit = SignalEvent(liq_idx_2[-1][0], "SHORT", liq_idx_2[-1][1])
                             self.events.put(signal1_exit)
-                            self.events.put(signal2_exit)
-
+                            self.events.put(signal2_exit)                      
+                        
                         signal1 = SignalEvent(liq_idx_1[-1][0], "EXIT", liq_idx_1[-1][1])
                         signal2 = SignalEvent(liq_idx_2[-1][0], "EXIT", liq_idx_2[-1][1])
                     
@@ -407,21 +407,16 @@ class StatisticalArbitragePairs(Strategy):
                         # Send the different positions to the execution handler
                         # Just need to use replace to get LONG, SHORT, EXIT
                         # Then send to the execution handler    
-                        signals.replace(
-                                        {
-                                            "Positions 1": {1: "LONG", -1: "SHORT", 0: "EXIT"},
-                                            "Positions 2": {1: "LONG", -1: "SHORT", 0: "EXIT"},
-                                        }
-                        )
+                        signals["Positions 1"] = signals["Positions 1"].map({1: "LONG", -1: "SHORT", 0: "EXIT"})
+                        signals["Positions 2"] = signals["Positions 2"].map({1: "LONG", -1: "SHORT", 0: "EXIT"})
+                        
                         position_tracker = signals["Positions 1"].iloc[-1]
-
                         if position_tracker != self.prior_position: # To ensure we only go LONG/SHOT once, until the signal changes 
                             # Now we need to set up the positions 
                             signal1 = SignalEvent(liq_idx_1[-1][0], signals["Positions 1"].iloc[-1], liq_idx_1[-1][1])
                             signal2 = SignalEvent(liq_idx_2[-1][0], signals["Positions 2"].iloc[-1], liq_idx_2[-1][1])
                             self.events.put(signal1)
                             self.events.put(signal2)
-
                             self.prior_position = position_tracker # Reset the prior position to LONG/SHORT
 
     """
