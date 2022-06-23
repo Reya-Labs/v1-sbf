@@ -163,7 +163,7 @@ class LongShortMomentumStrategy(Strategy):
                             signal_net_out = SignalEvent(liquidity_indexes[-1][0], "LONG", liquidity_indexes[-1][1])
                             self.events.put(signal_net_out)
                         
-                        signal = SignalEvent(liquidity_indexes[-1][0], "LONG", liquidity_indexes[-1][1])
+                        signal = SignalEvent(liquidity_indexes[-1][0], position, liquidity_indexes[-1][1])
                         self.events.put(signal)
                         # Update new prior position to prevent N-counting of the same LONG, SHORT position
                         self.prior_position = position
