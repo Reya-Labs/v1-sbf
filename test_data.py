@@ -80,7 +80,9 @@ class TestDataHandler(unittest.TestCase):
             is_liquid_staking=True
         )
 
+        dataHandlerWithCustomStartEndDates.update_rates()
 
+        # todo: need a rigoruous test
 
 
 if __name__ == '__main__':

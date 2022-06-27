@@ -1,6 +1,7 @@
 import datetime
 import os, os.path
 import pandas as pd
+import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
@@ -124,8 +125,16 @@ class HistoricCSVDataHandler(DataHandler):
 
         return df
 
-    def _interpolate_liquid_staking_liquidity_index(self, df):
+    def _removeFlatRegions(self, df):
 
+        # remove observations that are equal to the previous timestep
+        df.loc[:, "isNotFlat"] = np.where(
+            df.loc[:, "liquidityIndex"] == df.loc[:, "liquidityIndex"].shift(1),
+            False,
+            True
+        )
+
+        df = df.loc[df.loc[:, "isNotFlat"], ["liquidityIndex"]]
 
         return df
 
@@ -156,16 +165,16 @@ class HistoricCSVDataHandler(DataHandler):
                                           'liquidityIndex': "float64"
                                       }
                                   )
-            # interpolate the liquidity index
 
             if is_liquid_staking:
-                self.token_data[t] = self._interpolate_liquid_staking_liquidity_index(
+                self.token_data[t] = self._removeFlatRegions(
                     df=self.token_data[t]
                 )
-            else:
-                self.token_data[t] = self._interpolate_liquidity_index(
-                    df=self.token_data[t]
-                )
+
+            # interpolate the liquidity index
+            self.token_data[t] = self._interpolate_liquidity_index(
+                df=self.token_data[t]
+            )
 
             # change dataset frequency to the one specified by the data handler
             # todo: add frequency to the data handler init function
