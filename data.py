@@ -49,7 +49,7 @@ class HistoricCSVDataHandler(DataHandler):
     """
 
     def __init__(self, events, csv_dir, token_list, start_date_time=None, end_date_time=None,
-                 interpolation_frequency='H', backtest_frequency='D'):
+                 interpolation_frequency='H', backtest_frequency='D', is_liquid_staking=False):
         """
         Initialises the historic data handler by requesting
         the location of the CSV files and a list of tokens.
@@ -75,7 +75,9 @@ class HistoricCSVDataHandler(DataHandler):
         self.interpolation_frequency = interpolation_frequency
         self.backtest_frequency = backtest_frequency
 
-        self._open_convert_csv_files()
+        self._open_convert_csv_files(
+            is_liquid_staking=is_liquid_staking
+        )
 
     def update_rates(self):
         """

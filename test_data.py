@@ -68,6 +68,20 @@ class TestDataHandler(unittest.TestCase):
         self.assertEqual(str(self.dataHandler.latest_token_data['aave_usdc'][0][1]), '2021-03-12 00:00:00')
         self.assertEqual(self.dataHandler.latest_token_data['aave_usdc'][0][2], 1e27)
 
+    def test_interpolate_liquid_staking_liquidity_index(self):
+        new_events_queue = queue.Queue()
+
+        dataHandlerWithCustomStartEndDates = HistoricCSVDataHandler(
+            events=new_events_queue,
+            csv_dir="datasets",
+            token_list=["rocket_rETH"],
+            start_date_time='2021-09-30 09:35:10',
+            end_date_time='2022-06-15 14:14:59',
+            is_liquid_staking=True
+        )
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
