@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from signal import signal
 import stat
+from turtle import pos
 from matplotlib.cbook import Stack
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -167,6 +168,8 @@ class LongShortMomentumStrategy(Strategy):
                         self.events.put(signal)
                         # Update new prior position to prevent N-counting of the same LONG, SHORT position
                         self.prior_position = position
+                    
+                    print(liquidity_indexes[-1][1], " ",  liquidity_indexes[-1][2], " ", rates[-1], " ", position)
 
     def liquidity_index_to_apy(self, rates):
         liq_idx = np.array([r[2] for r in rates])
