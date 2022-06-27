@@ -42,9 +42,7 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     if not os.path.exists(f"./reports/{end}"):
         os.makedirs(f"./reports/{end}")
     name = output_portfolio.equity_curve.columns[3]
-    #reporter = SimpleBacktestReporter(backtest_results_df=output_portfolio.equity_curve, summary_stats=stats)
     if trade_trend:
-        #reporter.generate_report(report_title=f"LongShortMomentum_TREND_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_TREND_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     elif trade_stat_arb:
         if monthly:
@@ -54,7 +52,6 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
     elif long_rate:
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongOnly_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     else:
-        #reporter.generate_report(report_title=f"LongShortMomentum_RATE_{name}_trend_lookback_{trend_lookback}_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}")
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_RATE_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
 
     print("Backtest summary:")
@@ -63,7 +60,6 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
         print(s[0]+ ": "+s[1])
 
     if RUN_OPTUNA:
-        #obj = float(stats[1][1]) - 10*int(float(stats[2][1][:-1]) > 10.0) # Penalise maximum drawdown > 10 %
         obj = float(stats[1][1]) - float(stats[2][1][:-1])
         return obj 
 

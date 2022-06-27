@@ -86,13 +86,14 @@ class LongShortMomentumStrategyBacktest(Backtest):
             events=self.events_queue,
             csv_dir="datasets",
             #token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
-            #token_list=["lido_stETH"],
-            token_list=["lido_interpolated"],
+            token_list=["lido_stETH"],
+            #token_list=["lido_interpolated"],
             #token_list=["aave_usdc"], # --> only mean-reversion, and drawdown is not so attractive
             #token_list=["eth_aweth"], # --> trend-following and mean-reversion work
             #token_list=["eth_ceth"], 
             start_date_time=start_date_time,
-            end_date_time=end_date_time
+            end_date_time=end_date_time,
+            is_liquid_staking=True
         )
 
         self.strategy = LongShortMomentumStrategy(
