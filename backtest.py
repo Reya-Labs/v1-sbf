@@ -87,7 +87,7 @@ class LongShortMomentumStrategyBacktest(Backtest):
             csv_dir="datasets",
             #token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
             #token_list=["lido_stETH"],
-            token_list=["lido_stETH_MA"],
+            token_list=["lido_interpolated"],
             #token_list=["aave_usdc"], # --> only mean-reversion, and drawdown is not so attractive
             #token_list=["eth_aweth"], # --> trend-following and mean-reversion work
             #token_list=["eth_ceth"], 
