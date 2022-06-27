@@ -122,6 +122,11 @@ class HistoricCSVDataHandler(DataHandler):
 
         return df
 
+    def _interpolate_liquid_staking_liquidity_index(self, df):
+
+
+        return df
+
     def _adjust_liquidity_index_frequency(self, df):
 
         df = df.resample(self.backtest_frequency).ffill()
@@ -129,7 +134,7 @@ class HistoricCSVDataHandler(DataHandler):
 
         return df
 
-    def _open_convert_csv_files(self):
+    def _open_convert_csv_files(self, is_liquid_staking=False):
         """
         Opens the CSV files from the data directory, converting
         them into pandas DataFrames within a token dictionary.
@@ -150,9 +155,15 @@ class HistoricCSVDataHandler(DataHandler):
                                       }
                                   )
             # interpolate the liquidity index
-            self.token_data[t] = self._interpolate_liquidity_index(
-                df=self.token_data[t]
-            )
+
+            if is_liquid_staking:
+                self.token_data[t] = self._interpolate_liquid_staking_liquidity_index(
+                    df=self.token_data[t]
+                )
+            else:
+                self.token_data[t] = self._interpolate_liquidity_index(
+                    df=self.token_data[t]
+                )
 
             # change dataset frequency to the one specified by the data handler
             # todo: add frequency to the data handler init function
