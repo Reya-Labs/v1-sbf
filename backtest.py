@@ -33,6 +33,8 @@ class LongRateStrategyBacktest(Backtest):
             events=self.events_queue,
             csv_dir="datasets",
             token_list=["rocket_rETH", "lido_stETH"],
+            #token_list=["eth_aweth"],
+            #token_list=["eth_ceth", "eth_aweth"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -66,7 +68,6 @@ class LongRateStrategyBacktest(Backtest):
         )
 
     def run_backtest(self):
-
         self.eventLoop.run_outer_loop()
 
         return self.eventLoop.portfolio
@@ -85,8 +86,11 @@ class LongShortMomentumStrategyBacktest(Backtest):
             events=self.events_queue,
             csv_dir="datasets",
             #token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
-            token_list=["lido_stETH"],
-            #token_list=["aave_usdc"],
+            #token_list=["lido_stETH"],
+            token_list=["lido_stETH_MA"],
+            #token_list=["aave_usdc"], # --> only mean-reversion, and drawdown is not so attractive
+            #token_list=["eth_aweth"], # --> trend-following and mean-reversion work
+            #token_list=["eth_ceth"], 
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -139,6 +143,7 @@ class StatisticalArbitragePairsBacktest(Backtest):
                  #pairs = [("compound_usdc", "compound_dai")], # --> monthly works, moderate drawdown --> gone by June, don't use
                  pairs = [("rocket_rETH", "lido_stETH")], # --> monthly works, low drawdown --> survives to June tests
                  #pairs = [("aave_usdc", "compound_dai")], # --> monthly works, drawdown a bit large --> gone by June, don't use
+                 #pairs = [("eth_aweth", "eth_ceth")], # --> both monthly and rolling work, but rolling has modest drawdown
                  monthly=False):
 
         self.events_queue = queue.Queue()

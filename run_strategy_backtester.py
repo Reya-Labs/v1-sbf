@@ -48,9 +48,9 @@ def main(start_date_time="2021-04-01 00:00:00", end_date_time="2022-06-01 00:00:
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongShortMomentum_TREND_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     elif trade_stat_arb:
         if monthly:
-            output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_Monthly_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
+            output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_Monthly_{name}_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
         else:
-            output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_Rolling_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
+            output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_StatArb_Rolling_{name}_lookback_{lookback_window}days_apy_lookback_{apy_lookback}_deviations_{deviations}_leverage_{leverage}.csv")
     elif long_rate:
         output_portfolio.equity_curve.to_csv(f"./reports/{end}/df_LongOnly_{name}_lookback_{trend_lookback}days_apy_lookback_{apy_lookback}_buffer_{buffer}_leverage_{leverage}.csv")
     else:
