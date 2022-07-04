@@ -1,14 +1,13 @@
-from calendar import month
-from tkinter import W
 from event_loop import EventLoop
 import queue
 from abc import ABCMeta, abstractmethod
 from data import HistoricCSVDataHandler
-from strategy import LongRateStrategy, LongShortMomentumStrategy, StatisticalArbitragePairs
+from strategy import LongRateStrategy
+from LongShortMomentum import LongShortMomentumStrategy
+from StatisticalArbitragePairs import StatisticalArbitragePairs
 from execution import SimulatedExecutionHandler
 from portfolio import NaivePortfolio
 import datetime
-import pandas as pd
 
 # todo: add docs
 
@@ -32,9 +31,7 @@ class LongRateStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=["rocket_rETH", "lido_stETH"],
-            #token_list=["eth_aweth"],
-            #token_list=["eth_ceth", "eth_aweth"],
+            token_list=["eth_ceth", "rocket_rETH"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -85,15 +82,10 @@ class LongShortMomentumStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            #token_list=["rocket_rETH"], # --> advise trend-following and mean-reversion for the initial Lido and Rocket pools
-            token_list=["lido_stETH"],
-            #token_list=["lido_interpolated"],
-            #token_list=["aave_usdc"], # --> only mean-reversion, and drawdown is not so attractive
-            #token_list=["eth_aweth"], # --> trend-following and mean-reversion work
-            #token_list=["eth_ceth"], 
+            token_list=["rocket_rETH"], 
             start_date_time=start_date_time,
             end_date_time=end_date_time,
-            is_liquid_staking=True
+            is_liquid_staking=False
         )
 
         self.strategy = LongShortMomentumStrategy(
@@ -140,11 +132,7 @@ class StatisticalArbitragePairsBacktest(Backtest):
                  end_date_time="2022-06-01 00:00:00",
                  leverage=1.0, initial_capital=1.0,
                  lookback_window=30, apy_lookback=5, deviations=1,
-                 #pairs = [("aave_usdc", "aave_dai")], # --> No luck here
-                 #pairs = [("compound_usdc", "compound_dai")], # --> monthly works, moderate drawdown --> gone by June, don't use
-                 pairs = [("rocket_rETH", "lido_stETH")], # --> monthly works, low drawdown --> survives to June tests
-                 #pairs = [("aave_usdc", "compound_dai")], # --> monthly works, drawdown a bit large --> gone by June, don't use
-                 #pairs = [("eth_aweth", "eth_ceth")], # --> both monthly and rolling work, but rolling has modest drawdown
+                 pairs = [("eth_ceth", "rocket_rETH")],
                  monthly=False):
 
         self.events_queue = queue.Queue()
@@ -158,7 +146,7 @@ class StatisticalArbitragePairsBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=list(pairs[0]), # aUSDC - aDAI arbitrage 
+            token_list=list(pairs[0]),  
             start_date_time=formatted_start_date,
             end_date_time=end_date_time
         )

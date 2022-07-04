@@ -1,4 +1,3 @@
-import datetime
 import os, os.path
 import pandas as pd
 import numpy as np
@@ -135,7 +134,6 @@ class HistoricCSVDataHandler(DataHandler):
         )
 
         df = df.loc[df.loc[:, "isNotFlat"], ["liquidityIndex"]]
-
         return df
 
     def _adjust_liquidity_index_frequency(self, df):
