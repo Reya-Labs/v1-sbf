@@ -1,50 +1,46 @@
 import unittest
-from backtest import LongShortMomentumStrategyBacktest as LSM
+from backtest import StatisticalArbitragePairsBacktest as SAP
 
 
-class TestLongShortMomentumStrategyBacktest(unittest.TestCase):
+class TestStatisticalArbitragePairsBacktest(unittest.TestCase):
 
     def setUp(self):
 
-        self.momentumBacktest = LSM(
+        self.statArbBacktest = SAP(
             start_date_time="2022-04-01 00:00:00",
             end_date_time="2022-06-01 00:00:00",
             leverage=1.0,
             initial_capital=1.0,
-            trend_lookback=15, 
+            lookback_window=30, 
             apy_lookback=5, 
-            buffer=1,
-            trade_trend=False)
-
-        self.momentumBacktest.dataHandler.token_list = ["rocket_rETH"]
-        
+            deviations=1,
+            pairs = [("eth_ceth", "rocket_rETH")],
+            monthly=False)  
 
     def test_run_backtest(self):
 
-        portfolio = self.momentumBacktest.run_backtest()
+        portfolio = self.statArbBacktest.run_backtest()
         portfolio.create_equity_curve_dataframe()
         equity_curve = portfolio.equity_curve.dropna()
-        self.assertEqual(equity_curve.iloc[-1, -1], 1.0007282844849714)
+        self.assertEqual(equity_curve.iloc[-1, -1], 0.9963324674078823)
     
-    def test_run_backtest_trend(self):
+    def test_run_backtest_monthly(self):
         
-        self.momentumTrendBacktest = LSM(
+        self.statArbBacktestMonthly = SAP(
             start_date_time="2022-04-01 00:00:00",
             end_date_time="2022-06-01 00:00:00",
             leverage=1.0,
             initial_capital=1.0,
-            trend_lookback=15, 
+            lookback_window=30, 
             apy_lookback=5, 
-            buffer=1,
-            trade_trend=True)
+            deviations=1,
+            pairs = [("eth_ceth", "rocket_rETH")],
+            monthly=True)  
 
-        self.momentumTrendBacktest.dataHandler.token_list = ["rocket_rETH"]
-
-        portfolio = self.momentumTrendBacktest.run_backtest()
+        portfolio = self.statArbBacktestMonthly.run_backtest()
         portfolio.create_equity_curve_dataframe()
         equity_curve = portfolio.equity_curve.dropna()
         self.assertEqual(equity_curve.iloc[-1, -1], 1.0019509472971466)
-
 
 if __name__ == '__main__':
     unittest.main()
