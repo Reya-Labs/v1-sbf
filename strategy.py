@@ -4,6 +4,7 @@ from turtle import pos
 from sqlalchemy import column
 from event import SignalEvent
 
+SECONDS_IN_YEAR = 31536000
 class Strategy(object):
     """
     Strategy is an abstract base class providing an interface for
