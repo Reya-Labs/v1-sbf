@@ -42,5 +42,5 @@ class TestStatisticalArbitragePairsBacktest(unittest.TestCase):
         equity_curve = portfolio.equity_curve.dropna()
         self.assertEqual(equity_curve.iloc[-1, -1], 1.0019509472971466)
 
-if __name__ == '__main__':
+if __name__=="__main__":
     unittest.main()

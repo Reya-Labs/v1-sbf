@@ -46,5 +46,5 @@ class TestLongShortMomentumStrategyBacktest(unittest.TestCase):
         self.assertEqual(equity_curve.iloc[-1, -1], 1.0019509472971466)
 
 
-if __name__ == '__main__':
+if __name__=="__main__":
     unittest.main()
