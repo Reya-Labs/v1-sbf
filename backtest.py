@@ -31,7 +31,7 @@ class LongRateStrategyBacktest(Backtest):
         self.dataHandler = HistoricCSVDataHandler(
             events=self.events_queue,
             csv_dir="datasets",
-            token_list=["eth_ceth", "rocket_rETH"],
+            token_list=["aave_usdc"],
             start_date_time=start_date_time,
             end_date_time=end_date_time
         )
@@ -71,8 +71,8 @@ class LongRateStrategyBacktest(Backtest):
 
 class LongShortMomentumStrategyBacktest(Backtest):
 
-    def __init__(self, start_date_time='2022-04-01 00:00:00',
-                 end_date_time='2022-06-01 00:00:00',
+    def __init__(self, start_date_time="2022-04-01 00:00:00",
+                 end_date_time="2022-06-01 00:00:00",
                  leverage=1.0, initial_capital=1.0,
                  trend_lookback=15, apy_lookback=5, buffer=1,
                  trade_trend=False):
