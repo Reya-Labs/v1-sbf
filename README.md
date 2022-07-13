@@ -39,7 +39,7 @@ event loop of the SBF and outputs performance metrics for a given strategy and d
 5) ```event.py```: defines the ```Event``` base class and all subsequent derived events to be handled.
 6) ```execution.py```: defines the ```ExecutionHandler``` base class and its derived class for handling historical data.
 7) ```performance.py```: defined the ```PerformanceMetricsCalculator``` class, which calculate the Sharpe ratio and maximum drawdown for a given
-   trading strategy. For a general introduction to Dharpe ratios, and their associated frequentist statistics, I highly recommend Andrew Lo's
+   trading strategy. For a general introduction to Sharpe ratios, and their associated frequentist statistics, I highly recommend Andrew Lo's
    excellent paper: https://alo.mit.edu/wp-content/uploads/2017/06/The-Statistics-of-Sharpe-Ratios.pdf .
 8) ```portfolio.py```: defines the ```Portfolio``` class, which handles the strartegy equity curve asnd PnL calculations, and calls the
    calculations in the ```PerformanceMetricsCalculaor```. 
