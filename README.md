@@ -1,4 +1,4 @@
-# Voltz Signal Backtesting Framework (SBF)
+# Voltz Strategy Backtesting Framework (SBF)
 
 ## Overview
 
