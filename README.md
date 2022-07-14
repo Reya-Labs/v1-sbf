@@ -1,5 +1,8 @@
 # Voltz Strategy Backtesting Framework (SBF)
 
+IMPORTANT: this is an alpha version of the SBF. New trading strategies are under active development and will be added
+by Voltz Labs in due course. 
+
 ## Overview
 
 The Voltz SBF is an event-driven backtesting system, designed to work with generic trading strategies and evaluate 
